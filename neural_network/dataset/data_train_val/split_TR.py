@@ -1,15 +1,18 @@
 import pandas as pd
 
 # Carica il dataset da un file CSV
-file_path = "../monks-1.test"
-dataset = pd.read_csv(file_path, skiprows=7, index_col=0)
+file_path = "neural_network\\dataset\\monks-1.test"
+dataset = pd.read_csv(file_path)
 
-# Dividi il dataset in training set e validation set
-# random_state è un seed per rendere la divisione riproducibile
-train_set, val_set = pd.train_test_split(dataset, test_size=0.2, random_state=42)
+# Imposta un seed per la riproducibilità della divisione
+# Esegue la divisione del dataset in training set e validation set
+train_set = dataset.sample(frac=0.8, random_state=44)
+val_set = dataset.drop(train_set.index)
 
-# Salva il training set su un file CSV
-train_set.to_csv("train_set.csv", index=False)
+# Visualizza le dimensioni dei set di training e validation
+print(f"Dimensioni del training set: {train_set.shape}")
+print(f"Dimensioni del validation set: {val_set.shape}")
 
-# Salva il validation set su un file CSV
-val_set.to_csv("val_set.csv", index=False)
+# Salva i set in due file CSV separati
+train_set.to_csv("neural_network\\dataset\\data_train_val\\train_set.csv", index=False)
+val_set.to_csv("neural_network\\dataset\\data_train_val\\validation_set.csv", index=False)
