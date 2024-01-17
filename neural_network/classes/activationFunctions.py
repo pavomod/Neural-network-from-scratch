@@ -39,41 +39,41 @@ class ActivationFunction:
 
 
     # linear --------------------
-    def __linear(x: float) -> float:
+    def __linear(self,x: np.ndarray) -> np.ndarray:
         return x
     
-    def __d_linear(x: float) -> float:
+    def __d_linear(self,x: np.ndarray) -> np.ndarray:
         return 1
     
     # sigmoid --------------------
-    def __sigmoid(x: float) -> float:
+    def __sigmoid(self,x: np.ndarray) -> np.ndarray:
         return 1/(1+np.exp(-x))
     
-    def __d_sigmoid(x: float) -> float:
-        s = sigmoid(x)
+    def __d_sigmoid(self,x: np.ndarray) -> np.ndarray:
+        s = self.__sigmoid(x)
         return s*(1-s)
     
     # tanh --------------------
-    def __tanh(x: float) -> float:
+    def __tanh(self,x: np.ndarray) -> np.ndarray:
         return np.tanh(x)
     
-    def __d_tanh(x: float) -> float:
+    def __d_tanh(self,x: np.ndarray) -> np.ndarray:
         return 1 - math.pow(np.tanh(x), 2)
     
     # relu --------------------
-    def __relu(x: float) -> float:
+    def __relu(self,x: np.ndarray) -> np.ndarray:
         return np.maximum(0,x)
     
-    def __d_relu(x: float) -> float:
+    def __d_relu(self,x: np.ndarray) -> np.ndarray:
         if x > 0:
             return 1
         return 0
     
     # leaky relu --------------------
-    def __prelu(x: float, alpha: float=0.01) -> float:
+    def __prelu(self,x: np.ndarray, alpha: float=0.01) -> np.ndarray:
         return np.maximum(x > 0, x, alpha*x)
     
-    def __d_prelu(x: float, alpha: float=0.01) -> float:
+    def __d_prelu(self,x: np.ndarray, alpha: float=0.01) -> np.ndarray:
         if x > 0:
             return 1
         return alpha
