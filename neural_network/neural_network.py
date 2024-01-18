@@ -9,6 +9,9 @@ class NeuralNetwork:
         self.n_output_unit=n_output_unit
         self.n_hidden_layer=n_hidden_layer
         self.weights=[]
+        self.grad_weights=[]
+        self.grad_bias=[]
+        self.deltas=[]
         self.bias=[]
         self.not_activated_output=[] #! output prima di avere applicato la funzione di attivazione
         self.activated_output=[] #! output dopo avere applicato la funzione di attivazione
@@ -60,58 +63,67 @@ class NeuralNetwork:
 
     def backpropagation(self, target, learning_rate=0.01,lambda_reg=0.01): #lambda_reg -> tichonov regularization
         # Calcolo dell'errore
-        error = self.loss_function.derivative(target, self.activated_output[-1])
-        # Backward pass
-        for i in reversed(range(self.n_hidden_layer + 1)):
-            # Calcolo del gradiente della funzione di attivazione
-            d_activation = self.activation_function.derivative(self.not_activated_output[i])
-            # Calcolo del delta
-            delta = error * d_activation
-            # Calcolo del gradiente dei pesi e dei bias
-            d_weights = np.dot(self.activated_output[i].T, delta)  #+ lambda_reg * self.weights[i] #tikonov regularization
-            d_bias = np.sum(delta, axis=0, keepdims=True)
-            # Aggiornamento dei pesi e dei bias
-            self.weights[i] -= learning_rate * d_weights
-            self.bias[i] -= learning_rate * d_bias
-            # Propagazione dell'errore al livello precedente
-            if i != 0:
-                error = np.dot(delta, self.weights[i].T)
-    
+        self.grad_weights=[]
+        self.grad_bias=[]
+        self.deltas=[]
+        
+        self.deltas.append(self.activated_output[-1] - target)
+        
+        self.grad_weights.append(np.dot(self.activated_output[-2].T, self.deltas[-1])) 
+        self.grad_bias.append(np.sum(self.deltas[-1], axis=0, keepdims=True))
+        
+        for i in range(self.n_hidden_layer-1,0,-1):
+            self.deltas.append(np.dot(self.deltas[-1], self.weights[i].T) * self.activation_function.derivative(self.not_activated_output[i]))
+            self.grad_weights.append(np.dot(self.activated_output[i-1].T, self.deltas[-1]))
+            self.grad_bias.append(np.sum(self.deltas[-1], axis=0, keepdims=True))
+        
+        self.grad_weights.reverse()
+        self.grad_bias.reverse()
+        self.deltas.reverse()
+        
+        for i in range(self.n_hidden_layer):
+            self.weights[i] -= learning_rate * (self.grad_weights[i]) # QUI SI REGOLARIZZA CON TICHONOV -> self.weights[i] -= learning_rate * (self.grad_weights[i] + lambda_reg * self.weights[i])
+            self.bias[i] -= learning_rate * (self.grad_bias[i])
+            
     def train(self, input_data, target, learning_rate=0.01, epochs=124):
         for i in range(epochs):
-            self.forward(input_data[i].reshape(1, -1))
-            self.backpropagation(np.array([target[i]]), learning_rate)
-            #print(target[i], self.activated_output[-1])
-            total_loss=self.loss_function.function(np.array(target[i]), self.activated_output[-1])
-        mean_loss=total_loss/epochs
-        print(mean_loss)        
-    
+            self.forward(input_data)
+            self.backpropagation(target, learning_rate)
+            #if i % 100 == 0:
+                #print(f"Epoch {i}:")
+        print("Training")
+        print(self.loss_function.function(target,self.predict(input_data)))
+                
     def predict(self, input_data):
         return self.forward(input_data)
 
     def test(self, test_input_data, test_target):
-        predictions = self.predict(test_input_data)
-        test_loss = self.loss_function.function(test_target, predictions)
-        print(test_loss/test_input_data.shape[0])
+        print("Test")
+        print(self.loss_function.function(test_target, self.predict(test_input_data)))
+        
     
 #self,n_hidden_unit=4,n_hidden_layer=1,n_input=10,n_output_unit=3,activation_function='sigmoid',loss_function='mean_squared_error'
             
-nn = NeuralNetwork(n_input=6,n_output_unit=1,n_hidden_layer=2,n_hidden_unit=3,activation_function='sigmoid')
+nn = NeuralNetwork(n_input=6,n_output_unit=1,n_hidden_layer=2,n_hidden_unit=3,activation_function='sigmoid', loss_function='cross_entropy')
 
 #-----------------TRAIN-----------------
-df = pd.read_csv('neural_network\\classes\\monks-1.train', sep=" ", header=None)
+df = pd.read_csv('neural_network\\dataset\\monks-1.train', sep=" ", header=None)
 df.drop(columns=[df.columns[-1]], inplace=True)
-X = df.iloc[:, 1:-1].values # tutte le colonne tranne la prima
+x = df.iloc[:, 2:8].values # tutte le colonne tranne la prima
 y = df.iloc[:, 1].values   # la prima colonna
 
-#nn.train(X, y, learning_rate=0.01, epochs=124)
+y=y.reshape(-1,1)
+
+nn.train(x, y, learning_rate=0.001, epochs=100000)
 #-----------------TEST-----------------
-dt = pd.read_csv('neural_network\\classes\\monks-1.test', sep=" ", header=None)
+dt = pd.read_csv('neural_network\\dataset\\monks-1.test', sep=" ", header=None)
 dt.drop(columns=[dt.columns[-1]], inplace=True)
-xTest = dt.iloc[:, 1:-1].values # tutte le colonne tranne la prima
+xTest = dt.iloc[:, 2:8].values # tutte le colonne tranne la prima
 yTest = dt.iloc[:, 1].values   # la prima colonna
 
-#nn.test(xTest, yTest)
 
-print(nn.predict(X[0].reshape(1, -1)))
+yTest=yTest.reshape(-1,1)
+
+nn.test(xTest, yTest)
+
 

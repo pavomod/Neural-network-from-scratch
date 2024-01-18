@@ -58,7 +58,7 @@ class ActivationFunction:
         return np.tanh(x)
     
     def __d_tanh(self,x: np.ndarray) -> np.ndarray:
-        return 1 - math.pow(np.tanh(x), 2)
+        return 1 - np.power(self.__tanh(x), 2)
     
     # relu --------------------
     def __relu(self,x: np.ndarray) -> np.ndarray:
