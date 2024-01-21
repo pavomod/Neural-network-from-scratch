@@ -43,7 +43,7 @@ class ActivationFunction:
         return x
     
     def __d_linear(self,x: np.ndarray) -> np.ndarray:
-        return 1
+        return np.ones(x.shape)
     
     # sigmoid --------------------
     def __sigmoid(self,x: np.ndarray) -> np.ndarray:
@@ -65,15 +65,11 @@ class ActivationFunction:
         return np.maximum(0,x)
     
     def __d_relu(self,x: np.ndarray) -> np.ndarray:
-        if x > 0:
-            return 1
-        return 0
+        return np.where(x > 0, 1, 0)
     
     # leaky relu --------------------
     def __prelu(self,x: np.ndarray, alpha: float=0.01) -> np.ndarray:
-        return np.maximum(x > 0, x, alpha*x)
+        return np.where(x > 0, x, alpha*x)
     
     def __d_prelu(self,x: np.ndarray, alpha: float=0.01) -> np.ndarray:
-        if x > 0:
-            return 1
-        return alpha
+        return np.where(x > 0, 1, alpha)
