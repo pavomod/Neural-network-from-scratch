@@ -1,5 +1,5 @@
 import numpy as np
-from classes import Initializer, ActivationFunction, LossFunction
+from classes import Initializer, ActivationFunction, LossFunction, plot_loss_curve
 import pandas as pd
 
 class NeuralNetwork:
@@ -15,6 +15,7 @@ class NeuralNetwork:
         self.deltas=[]                          #! delta per ogni layer
         self.not_activated_output=[]            #! output prima di avere applicato la funzione di attivazione
         self.activated_output=[]                #! output dopo avere applicato la funzione di attivazione
+        self.loss_history=[]                    #! array che contiene i valori di loss del training
 
         self.initializer=Initializer()
         self.__networkInitialization()
@@ -94,13 +95,19 @@ class NeuralNetwork:
 
 
     def train(self, input_data, target, learning_rate=0.01, epochs=124):
+        self.loss_history = []
+
         for i in range(epochs):
             self.forward(input_data)
             self.backpropagation(target)
             self.update(learning_rate)
+            loss = self.loss_function.function(target, self.activated_output[-1])
+            self.loss_history.append(loss)
+            
             if i % 1000 == 0:
-                print(f"Epoch {i}: {self.loss_function.function(target, self.activated_output[-1])}")
+                print(f"Epoch {i}: {loss}")
         
+        self.plot_loss_curve()
         self.test(input_data, target, 'TRAINING')
                 
     # calcolo della predizione
@@ -118,6 +125,10 @@ class NeuralNetwork:
     def accuracy(self, y_test, y_pred):
         y_pred = np.where(y_pred > 0.5, 1, 0)
         return round(np.sum(y_test == y_pred) / len(y_test), 3) * 100
+    
+
+    def plot_loss_curve(self):
+        plot_loss_curve(self.loss_history)
 
     # stampa dei pesi e dei bias della rete neurale
     def printNetwork(self):
