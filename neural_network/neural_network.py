@@ -3,7 +3,7 @@ from classes import Initializer, ActivationFunction, LossFunction, plot_loss_cur
 import pandas as pd
 
 class NeuralNetwork:
-    def __init__(self,n_hidden_unit=3,n_hidden_layer=1,n_input=10,n_output_unit=3,activation_function='sigmoid',output_activation_function="relu",loss_function='mean_squared_error'):
+    def __init__(self,n_hidden_unit=3,n_hidden_layer=1,n_input=10,n_output_unit=3,activation_function='relu',output_activation_function='sigmoid',loss_function='mean_squared_error'):
         self.n_input=n_input                    #! numero di unità di input
         self.n_hidden_unit=n_hidden_unit        #! numero di unità per ogni layer nascosto
         self.n_output_unit=n_output_unit        #! numero di unità di output
@@ -145,11 +145,11 @@ class NeuralNetwork:
 
 
 #self,n_hidden_unit=4,n_hidden_layer=1,n_input=10,n_output_unit=3,activation_function='sigmoid',loss_function='mean_squared_error'
-nn = NeuralNetwork(n_input=6,n_output_unit=1,n_hidden_layer=2,n_hidden_unit=4,activation_function='sigmoid',output_activation_function="relu",loss_function='mean_squared_error')
+nn = NeuralNetwork(n_input=6,n_output_unit=1,n_hidden_layer=2,n_hidden_unit=4,activation_function='relu',output_activation_function='sigmoid',loss_function='mean_squared_error')
 
 
 #-----------------TRAIN-----------------
-df = pd.read_csv('neural_network\\dataset\\monks-3.train', sep=" ", header=None)
+df = pd.read_csv('neural_network\\dataset\\monks-1.train', sep=" ", header=None)
 df.drop(columns=[df.columns[-1]], inplace=True)
 x = df.iloc[:, 2:8].values # tutte le colonne tranne la prima
 y = df.iloc[:, 1].values   # la prima colonna
@@ -161,7 +161,7 @@ nn.train(x, y, learning_rate=0.01, epochs=100000)
 
 
 #-----------------TEST-----------------
-dt = pd.read_csv('neural_network\\dataset\\monks-3.test', sep=" ", header=None)
+dt = pd.read_csv('neural_network\\dataset\\monks-1.test', sep=" ", header=None)
 dt.drop(columns=[dt.columns[-1]], inplace=True)
 xTest = dt.iloc[:, 2:8].values # tutte le colonne tranne la prima
 yTest = dt.iloc[:, 1].values   # la prima colonna
