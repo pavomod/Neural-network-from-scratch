@@ -10,7 +10,11 @@ class Initializer:
         return np.random.uniform(min, max, shape)
     
     
-    def heInitializer(self,shape:np.ndarray): #! utile per ReLU
+    def heInitializer(self,shape:tuple[int,int]): #! utile per ReLU
         std=np.sqrt(2 / shape[0])
+        return np.random.normal(0, std, shape)
+    
+    def xavierInitializer(self,shape:tuple[int,int]):
+        std=np.sqrt(1 / shape[0])
         return np.random.normal(0, std, shape)
     

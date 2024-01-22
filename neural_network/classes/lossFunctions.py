@@ -32,7 +32,7 @@ class LossFunction:
         return np.mean(np.sum(np.power(y_true - y_pred, 2),axis=1))
     
     def mean_squared_error_derivative(self,y_true: np.ndarray, y_pred: np.ndarray) -> float:
-        return (2 / y_true.shape[0]) * (y_true - y_pred)
+        return - (2 / y_true.shape[0]) * (y_true - y_pred)
     
 
     # Mean Absolute Error ------------------------------------------------------
