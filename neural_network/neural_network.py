@@ -1,5 +1,5 @@
 import numpy as np
-from classes import Layer, LossFunction, plot_loss_curve
+from classes import Layer, LossFunction, LearningRateScheduler, plot_loss_curve
 import pandas as pd
 
 class NeuralNetwork:
@@ -15,7 +15,16 @@ class NeuralNetwork:
         self.loss_function=LossFunction(settings['training']['loss_function'])
         self.epochs = settings['training']['epochs']
         self.batch_size = settings['training']['batch_size']
-        self.learning_rate = settings['training']['learning_rate']
+
+        print(settings['training']['learning_rate_schedule']['approach'])
+        print(settings['training']['learning_rate_schedule']['params'])
+
+        self.learning_rate = LearningRateScheduler(
+                                            settings['training']['learning_rate'],
+                                            self.epochs,
+                                            settings['training']['learning_rate_schedule']['approach'],
+                                            settings['training']['learning_rate_schedule']['params']
+                                        )
         self.regularization_lambda = settings['training']['regularization_lambda']
         self.momentum = settings['training']['momentum']
         
@@ -102,10 +111,10 @@ class NeuralNetwork:
             self.grad_bias[i] = np.sum(self.deltas[i], axis=0, keepdims=True)
 
 
-    def update(self):
+    def update(self, epoch):
         for i in range(len(self.weights)):
-            self.velocity_weights[i] = self.momentum * self.velocity_weights[i] + self.learning_rate * (self.grad_weights[i] + self.regularization_lambda * self.weights[i])
-            self.velocity_bias[i] = self.momentum * self.velocity_bias[i] + self.learning_rate * self.grad_bias[i]
+            self.velocity_weights[i] = self.momentum * self.velocity_weights[i] + self.learning_rate.update_func(epoch) * (self.grad_weights[i] + self.regularization_lambda * self.weights[i])
+            self.velocity_bias[i] = self.momentum * self.velocity_bias[i] + self.learning_rate.update_func(epoch) * self.grad_bias[i]
             
             self.weights[i] -= self.velocity_weights[i]
             self.bias[i] -= self.velocity_bias[i]
@@ -133,7 +142,7 @@ class NeuralNetwork:
                 # Forward propagation, backpropagation e aggiornamento per il mini-batch
                 self.forward(batch_input)
                 self.backpropagation(batch_target)
-                self.update()
+                self.update(epoch)
 
             # Calcolo della loss per l'intero dataset (opzionale)
             self.forward(input_data)
@@ -159,7 +168,7 @@ class NeuralNetwork:
 
 
     def accuracy(self, y_test, y_pred):
-        y_pred = np.where(y_pred > 0, 1, 0)
+        y_pred = np.where(y_pred > 0.5, 1, 0)
         return round(np.sum(y_test == y_pred) / len(y_test), 3) * 100
     
 

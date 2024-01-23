@@ -4,4 +4,5 @@ from .lossFunctions import *
 from .validation import *
 from .plot import *
 from .layer import *
+from .learningRateScheduler import *
 
