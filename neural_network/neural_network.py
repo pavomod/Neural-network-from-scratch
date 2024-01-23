@@ -6,7 +6,7 @@ class NeuralNetwork:
     def __init__(self, settings):
         self.n_input=settings['model']['input_size']
         self.layers = []
-        seed = np.random.randint(-2**31, 2**31)
+        seed = np.random.randint(0, 2**31 - 1)
         for i in range (len(settings['model']['layers'])):
             if settings['model']['seed'] != -1:
                 seed = settings['model']['seed'] 
@@ -16,8 +16,6 @@ class NeuralNetwork:
         self.epochs = settings['training']['epochs']
         self.batch_size = settings['training']['batch_size']
 
-        print(settings['training']['learning_rate_schedule']['approach'])
-        print(settings['training']['learning_rate_schedule']['params'])
 
         self.learning_rate = LearningRateScheduler(
                                             settings['training']['learning_rate'],
