@@ -1,13 +1,25 @@
 import numpy as np
-from classes import Initializer, ActivationFunction, LossFunction, plot_loss_curve
+from classes import Layer, LossFunction, plot_loss_curve
 import pandas as pd
 
 class NeuralNetwork:
-    def __init__(self,n_hidden_unit=3,n_hidden_layer=1,n_input=10,n_output_unit=3,activation_function='relu',output_activation_function='sigmoid',loss_function='mean_squared_error'):
-        self.n_input=n_input                    #! numero di unità di input
-        self.n_hidden_unit=n_hidden_unit        #! numero di unità per ogni layer nascosto
-        self.n_output_unit=n_output_unit        #! numero di unità di output
-        self.n_hidden_layer=n_hidden_layer      #! numero di layer nascosti
+    def __init__(self, settings):
+        self.n_input=settings['model']['input_size']
+        self.layers = []
+        seed = np.random.randint(-2**31, 2**31)
+        for i in range (len(settings['model']['layers'])):
+            if settings['model']['seed'] != -1:
+                seed = settings['model']['seed'] 
+            self.layers.append(Layer(settings['model']['layers'][i]['num_neurons'], settings['model']['layers'][i]['activation_function'], settings['model']['layers'][i]['initialization'], seed))
+        print("Seed: ", seed)
+        self.loss_function=LossFunction(settings['training']['loss_function'])
+        self.epochs = settings['training']['epochs']
+        self.batch_size = settings['training']['batch_size']
+        self.learning_rate = settings['training']['learning_rate']
+        self.regularization_lambda = settings['training']['regularization_lambda']
+        self.momentum = settings['training']['momentum']
+        
+
         self.weights=[]                         #! weights per ogni layer
         self.bias=[]                            #! bias per ogni layer
         self.grad_weights=[]                    #! gradienti dei pesi per ogni layer
@@ -18,31 +30,29 @@ class NeuralNetwork:
         self.loss_history=[]                    #! array che contiene i valori di loss del training
         self.velocity_weights = []              #! velocità dei pesi per ogni layer
         self.velocity_bias = []                 #! velocità dei bias per ogni layer
-        self.initializer=Initializer()
-        self.__networkInitialization()
-        self.activation_function=ActivationFunction(activation_function)
-        self.output_activation_function=ActivationFunction(output_activation_function)
-        self.loss_function=LossFunction(loss_function)
 
-        
+        # inizializzazione della rete
+        self.__networkInitialization()
+    
+
+
     # inizializzazione dei pesi e dei bias della rete neurale
     def __networkInitialization(self):
         #! primo layer nascosto
-        self.weights.append(self.initializer.xavierInitializer((self.n_input,self.n_hidden_unit))) 
+        first_layer = self.layers[0]
+        self.weights.append(first_layer.initialization((self.n_input,first_layer.num_neurons))) 
         
         #! restanti layer nascosti
-        for _ in range(self.n_hidden_layer -1):
-            self.weights.append(self.initializer.xavierInitializer((self.n_hidden_unit,self.n_hidden_unit))) 
+        for i in range(1, len(self.layers)-1):
+            self.weights.append(self.layers[i].initialization((self.layers[i-1].num_neurons,self.layers[i].num_neurons))) 
+        
         #! output layer
-        self.weights.append(self.initializer.uniformInitializer(-0.5,0.5,(self.n_hidden_unit,self.n_output_unit)))
+        self.weights.append(self.layers[-1].initialization((self.layers[-2].num_neurons,self.layers[-1].num_neurons)))
                 
         #! primo layer nascosto
-        self.bias.append(np.zeros((1,self.n_hidden_unit)))
         #! restanti layer nascosti
-        for _ in range(self.n_hidden_layer -1):
-            self.bias.append(np.zeros((1,self.n_hidden_unit)))
-        #! output layer   
-        self.bias.append(np.zeros((1,self.n_output_unit)))
+        for i in range(len(self.layers)):
+            self.bias.append(np.zeros((1,self.layers[i].num_neurons)))
         
         self.velocity_weights = [np.zeros_like(w) for w in self.weights]
         self.velocity_bias = [np.zeros_like(b) for b in self.bias]
@@ -55,10 +65,10 @@ class NeuralNetwork:
         self.activated_output.append(input_data)
 
         # Propagazione attraverso gli strati nascosti
-        for i in range(self.n_hidden_layer):
+        for i in range(len(self.layers)-1):
             layer_input = self.activated_output[-1]
             z = np.dot(layer_input, self.weights[i]) + self.bias[i]
-            a = self.activation_function.function(z)
+            a = self.layers[i].activation_function.function(z)
             
             self.not_activated_output.append(z)
             self.activated_output.append(a)
@@ -66,7 +76,7 @@ class NeuralNetwork:
         # Propagazione attraverso lo strato di output
         layer_input = self.activated_output[-1]
         z = np.dot(layer_input, self.weights[-1]) + self.bias[-1]
-        a = self.output_activation_function.function(z)
+        a = self.layers[-1].activation_function.function(z)
         
         self.not_activated_output.append(z)
         self.activated_output.append(a)
@@ -76,39 +86,38 @@ class NeuralNetwork:
 
 
     def backpropagation(self, y_true):
-        self.deltas = [None] * (self.n_hidden_layer + 1)
-        self.grad_weights = [None] * (self.n_hidden_layer + 1)
-        self.grad_bias = [None] * (self.n_hidden_layer + 1)
+        self.deltas = [None] * (len(self.layers))
+        self.grad_weights = [None] * (len(self.layers))
+        self.grad_bias = [None] * (len(self.layers))
         
         # Calcolo del delta per lo strato di output
-        self.deltas[-1] = self.loss_function.derivative(y_true,self.activated_output[-1]) * self.output_activation_function.derivative(self.not_activated_output[-1])
+        self.deltas[-1] = self.loss_function.derivative(y_true,self.activated_output[-1]) * self.layers[-1].activation_function.derivative(self.not_activated_output[-1])
         self.grad_weights[-1] = np.dot(self.activated_output[-2].T, self.deltas[-1])
         self.grad_bias[-1] = np.sum(self.deltas[-1], axis=0, keepdims=True)
         
         # Calcolo del delta per gli strati nascosti
-        for i in reversed(range(self.n_hidden_layer)):
-            self.deltas[i] = np.dot(self.deltas[i + 1], self.weights[i + 1].T) * self.activation_function.derivative(self.not_activated_output[i])
+        for i in reversed(range(len(self.layers)-1)):
+            self.deltas[i] = np.dot(self.deltas[i + 1], self.weights[i + 1].T) * self.layers[i].activation_function.derivative(self.not_activated_output[i])
             self.grad_weights[i] = np.dot(self.activated_output[i].T, self.deltas[i])
             self.grad_bias[i] = np.sum(self.deltas[i], axis=0, keepdims=True)
 
 
-    def update(self, learning_rate=0.01, lambda_reg=0.001, momentum=0.9):
+    def update(self):
         for i in range(len(self.weights)):
-            self.velocity_weights[i] = momentum * self.velocity_weights[i] + learning_rate * (self.grad_weights[i] + lambda_reg * self.weights[i])
-            self.velocity_bias[i] = momentum * self.velocity_bias[i] + learning_rate * self.grad_bias[i]
+            self.velocity_weights[i] = self.momentum * self.velocity_weights[i] + self.learning_rate * (self.grad_weights[i] + self.regularization_lambda * self.weights[i])
+            self.velocity_bias[i] = self.momentum * self.velocity_bias[i] + self.learning_rate * self.grad_bias[i]
             
             self.weights[i] -= self.velocity_weights[i]
             self.bias[i] -= self.velocity_bias[i]
 
-    def train(self, input_data, target, learning_rate=0.01, epochs=124, batch_size=32, lambda_reg=0.001, momentum=0.9):
+    def train(self, input_data, target):
         self.loss_history = []
 
         # Calcolo del numero di mini-batch
         n_samples = input_data.shape[0] 
-        n_batches = int(np.ceil(n_samples / batch_size))
-        print(n_batches)
+        n_batches = int(np.ceil(n_samples / self.batch_size))
 
-        for epoch in range(epochs):
+        for epoch in range(self.epochs):
             # Mescolare i dati 
             permutation = np.random.permutation(n_samples)
             input_data_shuffled = input_data[permutation]
@@ -116,26 +125,26 @@ class NeuralNetwork:
 
             for batch in range(n_batches): 
                 
-                start = batch * batch_size 
-                end = min(start + batch_size, n_samples)   
+                start = batch * self.batch_size 
+                end = min(start + self.batch_size, n_samples)   
                 batch_input = input_data_shuffled[start:end]
                 batch_target = target_shuffled[start:end]
 
                 # Forward propagation, backpropagation e aggiornamento per il mini-batch
                 self.forward(batch_input)
                 self.backpropagation(batch_target)
-                self.update(learning_rate, lambda_reg, momentum)
+                self.update()
 
             # Calcolo della loss per l'intero dataset (opzionale)
             self.forward(input_data)
             loss = self.loss_function.function(target, self.activated_output[-1])
             self.loss_history.append(loss)
 
-            if epoch % 1000 == 0:
+            if epoch % 50 == 0:
                 print(f"Epoch {epoch}: {loss}")
 
-        self.plot_loss_curve()
         self.test(input_data, target, 'TRAINING')
+        self.plot_loss_curve()
                 
     # calcolo della predizione
     def predict(self, input_data):
@@ -150,7 +159,7 @@ class NeuralNetwork:
 
 
     def accuracy(self, y_test, y_pred):
-        y_pred = np.where(y_pred > 0.5, 1, 0)
+        y_pred = np.where(y_pred > 0, 1, 0)
         return round(np.sum(y_test == y_pred) / len(y_test), 3) * 100
     
 
@@ -167,38 +176,3 @@ class NeuralNetwork:
         for i in range(len(self.bias)):
             print(f"Layer {i+1}:")
             print(self.bias[i])
-        
-    
-
-
-#self,n_hidden_unit=4,n_hidden_layer=1,n_input=10,n_output_unit=3,activation_function='sigmoid',loss_function='mean_squared_error'
-nn = NeuralNetwork(n_input=6,n_output_unit=1,n_hidden_layer=3,n_hidden_unit=4,activation_function='relu',output_activation_function='sigmoid',loss_function='mean_squared_error')
-
-
-#-----------------TRAIN-----------------
-df = pd.read_csv('neural_network\\dataset\\monks-3.train', sep=" ", header=None)
-df.drop(columns=[df.columns[-1]], inplace=True)
-x = df.iloc[:, 2:8].values # tutte le colonne tranne la prima
-y = df.iloc[:, 1].values   # la prima colonna
-
-y=y.reshape(-1,1)
-
-nn.train(x, y, learning_rate=0.01, epochs=500,lambda_reg=0.001, momentum=0.9)
-#lr variabile
-#momentum
-#tikonov   
-#r_prop 
-
-
-#-----------------TEST-----------------
-dt = pd.read_csv('neural_network\\dataset\\monks-3.test', sep=" ", header=None)
-dt.drop(columns=[dt.columns[-1]], inplace=True)
-xTest = dt.iloc[:, 2:8].values # tutte le colonne tranne la prima
-yTest = dt.iloc[:, 1].values   # la prima colonna
-
-
-yTest=yTest.reshape(-1,1)
-
-nn.test(xTest, yTest)
-
-

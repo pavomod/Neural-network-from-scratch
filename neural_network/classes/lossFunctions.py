@@ -1,28 +1,19 @@
 import math
 import numpy as np
-from typing import Callable
+from typing import Callable, Tuple
 
 
 
 class LossFunction:
     def __init__(self, name: str):
         self.name = name
-        self.function = self.__getFunction(name)
-        self.derivative = self.__getDerivative(name)
+        self.function, self.derivative = self.__get(name)
     
-    def __getFunction(self, name: str)  -> Callable[[float], float]:
+    def __get(self, name: str) -> Tuple[Callable[[float], float], Callable[[float], float]]:
         if name == 'mean_squared_error':
-            return self.mean_squared_error
+            return self.mean_squared_error, self.mean_squared_error_derivative
         elif name == 'mean_euclidean_distance':
-            return self.mean_euclidean_distance
-        else:
-            raise ValueError(f"Loss function {name} not implemented")
-        
-    def __getDerivative(self, name: str)  -> Callable[[float], float]:
-        if name == 'mean_squared_error':
-            return self.mean_squared_error_derivative
-        elif name == 'mean_euclidean_distance':
-            return self.mean_euclidean_distance_derivative
+            return self.mean_euclidean_distance, self.mean_euclidean_distance_derivative
         else:
             raise ValueError(f"Loss function {name} not implemented")
         

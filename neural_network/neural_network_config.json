@@ -1,0 +1,27 @@
+{
+    "model": {
+        "input_size": 6,
+        "output_size": 1,
+        "seed": 42,
+        "layers": [
+            {
+                "num_neurons": 4,
+                "activation_function": "relu",
+                "initialization": "he_initializer"
+            },
+            {
+                "num_neurons": 1,
+                "activation_function": "sigmoid",
+                "initialization": "xavier_initializer"
+            }
+        ]
+    },
+    "training": {
+        "loss_function": "mean_squared_error",
+        "epochs": 200,
+        "batch_size": 30,
+        "learning_rate": 0.002,
+        "regularization_lambda": 0.0001,
+        "momentum": 0.96
+    }
+}

@@ -1,39 +1,22 @@
 import numpy as np
-import math
-from typing import Callable
+from typing import Callable, Tuple
 
 class ActivationFunction:
     def __init__(self, name: str):
         self.name = name
-        self.function = self.__getFunction(name)
-        self.derivative = self.__getDerivative(name)
+        self.function, self.derivative = self.__get(name)
     
-
-    def __getFunction(self, name: str) -> Callable[[float], float]:
+    def __get(self, name: str) -> Tuple[Callable[[float], float], Callable[[float], float]]:
         if name == 'linear':
-            return self.__linear
+            return self.__linear, self.__d_linear
         elif name == 'sigmoid':
-            return self.__sigmoid
+            return self.__sigmoid, self.__d_sigmoid
         elif name == 'tanh':
-            return self.__tanh
+            return self.__tanh, self.__d_tanh
         elif name == 'relu':
-            return self.__relu
+            return self.__relu, self.__d_relu
         elif name == 'prelu':
-            return self.__prelu
-        else:
-            raise ValueError('Invalid activation function')
-        
-    def __getDerivative(self, name: str) -> Callable[[float], float]:
-        if name == 'linear':
-            return self.__d_linear
-        elif name == 'sigmoid':
-            return self.__d_sigmoid
-        elif name == 'tanh':
-            return self.__d_tanh
-        elif name == 'relu':
-            return self.__d_relu
-        elif name == 'prelu':
-            return self.__d_prelu
+            return self.__prelu, self.__d_prelu
         else:
             raise ValueError('Invalid activation function')
 
