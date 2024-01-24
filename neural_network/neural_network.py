@@ -15,8 +15,8 @@ class NeuralNetwork:
         self.loss_function=LossFunction(settings['training']['loss_function'])
         self.epochs = settings['training']['epochs']
         self.batch_size = settings['training']['batch_size']
-
-
+        self.print_every=settings['training']['print_every']
+        self.print_loss=settings['training']['print_loss']
         self.learning_rate = LearningRateScheduler(
                                             settings['training']['learning_rate'],
                                             self.epochs,
@@ -37,7 +37,8 @@ class NeuralNetwork:
         self.loss_history=[]                    #! array che contiene i valori di loss del training
         self.velocity_weights = []              #! velocità dei pesi per ogni layer
         self.velocity_bias = []                 #! velocità dei bias per ogni layer
-
+            
+        self.val_loss_history = []  # Aggiunta per tenere traccia della loss di validazione
         # inizializzazione della rete
         self.__networkInitialization()
     
@@ -117,14 +118,15 @@ class NeuralNetwork:
             self.weights[i] -= self.velocity_weights[i]
             self.bias[i] -= self.velocity_bias[i]
 
-    def train(self, input_data, target):
+    def train(self, input_data, target, val_input ,val_target):
         self.loss_history = []
-
+        self.val_loss_history = []
         # Calcolo del numero di mini-batch
         n_samples = input_data.shape[0] 
         n_batches = int(np.ceil(n_samples / self.batch_size))
 
         for epoch in range(self.epochs):
+            
             # Mescolare i dati 
             permutation = np.random.permutation(n_samples)
             input_data_shuffled = input_data[permutation]
@@ -142,27 +144,34 @@ class NeuralNetwork:
                 self.backpropagation(batch_target)
                 self.update(epoch)
 
-            # Calcolo della loss per l'intero dataset (opzionale)
-            self.forward(input_data)
-            loss = self.loss_function.function(target, self.activated_output[-1])
+            # Calcolo della loss per il training
+            output_predict=self.predict(input_data)
+            loss, training_accuracy = self.performance(output_predict,target)
             self.loss_history.append(loss)
-
-            if epoch % 50 == 0:
-                print(f"Epoch {epoch}: {loss}")
-
-        self.test(input_data, target, 'TRAINING')
-        self.plot_loss_curve()
+            #calcola la loss per il validation
+            val_output=self.predict(val_input)
+            performance_loss, validation_accuracy =self.performance(val_output,val_target)
+            self.val_loss_history.append(performance_loss)
+            
+            if self.print_loss and epoch % self.print_every == 0:
+                print(f"( Epoch {epoch} ) training loss: {loss}\t validation loss: {performance_loss}")
                 
+        if self.print_loss:
+            self.plot_loss_curve(training_accuracy,validation_accuracy)
+            
     # calcolo della predizione
     def predict(self, input_data):
         return self.forward(input_data)
 
     # calcolo dell'errore tra la predizione e il target
-    def test(self, test_input_data, test_target, name='TEST'):
-        output = self.predict(test_input_data)
-        print(f"\n\n-------------------- {name} --------------------")
-        print(f"Loss:\t{self.loss_function.function(test_target, output)}")
-        print(f"Accuracy:\t{self.accuracy(test_target, output)}%")
+    def performance(self, output_predict, output_target, name='TEST'):
+        loss = self.loss_function.function(output_target, output_predict)
+        accuracy = self.accuracy(output_target, output_predict)
+        # print(f"\n\n-------------------- {name} --------------------")
+        # print(f"Loss:\t{self.loss_function.function(test_target, output)}")
+        # print(f"Accuracy:\t{self.accuracy(test_target, output)}%")
+        return loss,accuracy
+
 
 
     def accuracy(self, y_test, y_pred):
@@ -170,8 +179,8 @@ class NeuralNetwork:
         return round(np.sum(y_test == y_pred) / len(y_test), 3) * 100
     
 
-    def plot_loss_curve(self):
-        plot_loss_curve(self.loss_history)
+    def plot_loss_curve(self,training_accuracy,validation_accuracy):
+        plot_loss_curve(self.loss_history,self.val_loss_history,training_accuracy,validation_accuracy)
 
     # stampa dei pesi e dei bias della rete neurale
     def printNetwork(self):

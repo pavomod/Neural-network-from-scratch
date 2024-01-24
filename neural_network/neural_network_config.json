@@ -1,8 +1,8 @@
 {
     "model": {
-        "input_size": 6,
+        "input_size": 17,
         "output_size": 1,
-        "seed": 42,
+        "seed": 2002557894,
         "layers": [
             {
                 "num_neurons": 4,
@@ -18,11 +18,13 @@
     },
     "training": {
         "loss_function": "mean_squared_error",
-        "epochs": 300,
+        "epochs": 250,
         "batch_size": 16,
-        "learning_rate": 0.01,
-        "regularization_lambda": 0.001,
-        "momentum": 0.91,
+        "print_every": 50,
+        "print_loss":true,
+        "learning_rate": 0.05,
+        "regularization_lambda": 0.005,
+        "momentum": 0.9,
         "learning_rate_schedule": {
             "approach": "cosine_annealing",
             "params": {
@@ -32,5 +34,8 @@
                 "warmup_epochs": 5
             }
         }
+    },
+    "preprocesing": {
+        "name": "one_hot_encode"
     }
 }
