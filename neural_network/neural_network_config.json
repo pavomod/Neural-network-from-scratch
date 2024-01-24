@@ -23,7 +23,7 @@
         "print_every": 50,
         "print_loss":true,
         "learning_rate": 0.05,
-        "regularization_lambda": 0.005,
+        "regularization_lambda": 0.000,
         "momentum": 0.9,
         "learning_rate_schedule": {
             "approach": "cosine_annealing",
@@ -33,9 +33,15 @@
                 "step_size": 20,
                 "warmup_epochs": 5
             }
+        },
+        "early_stopping": {
+            "enabled": true,
+            "patience": 10,
+            "min_delta": 0.001
         }
     },
     "preprocesing": {
         "name": "one_hot_encode"
     }
+
 }

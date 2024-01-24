@@ -1,5 +1,5 @@
 import numpy as np
-from classes import Layer, LossFunction, LearningRateScheduler, plot_loss_curve
+from classes import Layer, LossFunction, LearningRateScheduler, EarlyStopping , plot_loss_curve
 import pandas as pd
 
 class NeuralNetwork:
@@ -26,6 +26,7 @@ class NeuralNetwork:
         self.regularization_lambda = settings['training']['regularization_lambda']
         self.momentum = settings['training']['momentum']
         
+        self.early_stopping = EarlyStopping(settings['training']['early_stopping']['enabled'], settings['training']['early_stopping']['patience'], settings['training']['early_stopping']['min_delta'])
 
         self.weights=[]                         #! weights per ogni layer
         self.bias=[]                            #! bias per ogni layer
@@ -121,6 +122,7 @@ class NeuralNetwork:
     def train(self, input_data, target, val_input ,val_target):
         self.loss_history = []
         self.val_loss_history = []
+        self.early_stopping.reset()
         # Calcolo del numero di mini-batch
         n_samples = input_data.shape[0] 
         n_batches = int(np.ceil(n_samples / self.batch_size))
@@ -143,7 +145,7 @@ class NeuralNetwork:
                 self.forward(batch_input)
                 self.backpropagation(batch_target)
                 self.update(epoch)
-
+            
             # Calcolo della loss per il training
             output_predict=self.predict(input_data)
             loss, training_accuracy = self.performance(output_predict,target)
@@ -155,7 +157,12 @@ class NeuralNetwork:
             
             if self.print_loss and epoch % self.print_every == 0:
                 print(f"( Epoch {epoch} ) training loss: {loss}\t validation loss: {performance_loss}")
-                
+            
+            if self.early_stopping(performance_loss):
+                print(f"Early stopping at epoch {epoch}")
+                break
+            
+            
         if self.print_loss:
             self.plot_loss_curve(training_accuracy,validation_accuracy)
             
@@ -164,12 +171,9 @@ class NeuralNetwork:
         return self.forward(input_data)
 
     # calcolo dell'errore tra la predizione e il target
-    def performance(self, output_predict, output_target, name='TEST'):
+    def performance(self, output_predict, output_target):
         loss = self.loss_function.function(output_target, output_predict)
         accuracy = self.accuracy(output_target, output_predict)
-        # print(f"\n\n-------------------- {name} --------------------")
-        # print(f"Loss:\t{self.loss_function.function(test_target, output)}")
-        # print(f"Accuracy:\t{self.accuracy(test_target, output)}%")
         return loss,accuracy
 
 
@@ -177,6 +181,13 @@ class NeuralNetwork:
     def accuracy(self, y_test, y_pred):
         y_pred = np.where(y_pred > 0.5, 1, 0)
         return round(np.sum(y_test == y_pred) / len(y_test), 3) * 100
+    
+    def test(self, input_data, target):
+        output = self.predict(input_data)
+        loss_test, accuracy_test = self.performance(output, target)
+        print("\n\n-------------------- TEST --------------------")
+        print(f"Loss:\t{loss_test}")
+        print(f"Accuracy:\t{accuracy_test}%")
     
 
     def plot_loss_curve(self,training_accuracy,validation_accuracy):

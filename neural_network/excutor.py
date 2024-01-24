@@ -4,12 +4,12 @@ from classes import Preprocessing
 from neural_network import NeuralNetwork
 
 
-FILE_PATH = "neural_network\\neural_network_config.json"
+PATH_CONFIG = "neural_network\\neural_network_config.json"
 
 PATH_TRAIN = "neural_network\\dataset\\data_train_val\\training_set.csv"
 PATH_VALIDATION = "neural_network\\dataset\data_train_val\\validation_set.csv"
-PATH_TEST = "neural_network\\dataset\data_train_val\\test_set.csv"
 PATH_RETRAIN = "neural_network\\dataset\data_train_val\\retrain_set.csv"
+PATH_TEST = "neural_network\\dataset\data_train_val\\test_set.csv"
 
 
 def read_neural_network_config():
@@ -19,7 +19,7 @@ def read_neural_network_config():
     Returns:
     dict: Un dizionario contenente i dati della configurazione della rete neurale.
     """
-    with open(FILE_PATH, 'r') as file:
+    with open(PATH_CONFIG, 'r') as file:
         config = json.load(file)
     return config
 
@@ -53,13 +53,13 @@ def execute(nn, config, test=False):
     nn.train(x_retrain,y_retrain,x_validaiton,y_validation)
     
     #-----------------TEST-----------------
-    # if test:
-    #     nn.test(x_test,y_test)
+    if test:
+        nn.test(x_test,y_test)
 
     
 
 
 config = read_neural_network_config()
 nn = NeuralNetwork(config)
-execute(nn, config, test=False)
+execute(nn, config, test=True)
 
