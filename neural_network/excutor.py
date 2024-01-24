@@ -1,9 +1,16 @@
 import json
 import pandas as pd
+from classes import Preprocessing
 from neural_network import NeuralNetwork
 
 
 FILE_PATH = "neural_network\\neural_network_config.json"
+
+PATH_TRAIN = "neural_network\\dataset\\data_train_val\\training_set.csv"
+PATH_VALIDATION = "neural_network\\dataset\data_train_val\\validation_set.csv"
+PATH_TEST = "neural_network\\dataset\data_train_val\\test_set.csv"
+PATH_RETRAIN = "neural_network\\dataset\data_train_val\\retrain_set.csv"
+
 
 def read_neural_network_config():
     """
@@ -17,39 +24,42 @@ def read_neural_network_config():
     return config
 
 
-
-
-
-def execute(nn, path_train, path_validation, path_test, test=False):
-    #-----------------TRAIN-----------------
-    df = pd.read_csv(path_train, sep=" ", header=None)
+def read_dataset(path,encoder_name):
+    df = pd.read_csv(path, sep=" ", header=None)
     df.drop(columns=[df.columns[-1]], inplace=True)
+    
     x = df.iloc[:, 2:8].values # tutte le colonne tranne la prima
+    
     y = df.iloc[:, 1].values   # la prima colonna
     y=y.reshape(-1,1)
-    print("Train")
-    nn.train(x, y)
+    encoder=Preprocessing(encoder_name)
+    x=encoder.encoder(x)
+    
+    return x, y
 
+
+def execute(nn, config, test=False):
+    encoder_name=config['preprocesing']['name']
+    #-----------------DATASET-----------------
+    x_train,y_train = read_dataset(PATH_TRAIN,encoder_name)
+    x_validaiton,y_validation = read_dataset(PATH_VALIDATION,encoder_name)
+    x_retrain,y_retrain = read_dataset(PATH_RETRAIN,encoder_name)
+    x_test,y_test = read_dataset(PATH_TEST,encoder_name)
+    
+    #-----------------TRAIN E VALIDATION-----------------    
+    nn.train(x_train, y_train,x_validaiton,y_validation)
+    
+    #-----------------RETRAIN-----------------
+    nn.train(x_retrain,y_retrain,x_validaiton,y_validation)
+    
     #-----------------TEST-----------------
-    if test:
-        dt = pd.read_csv(path_test, sep=" ", header=None)
-        dt.drop(columns=[dt.columns[-1]], inplace=True)
-        xTest = dt.iloc[:, 2:8].values # tutte le colonne tranne la prima
-        yTest = dt.iloc[:, 1].values   # la prima colonna
-        yTest=yTest.reshape(-1,1)
-        print("Test")
-        nn.test(xTest, yTest)
+    # if test:
+    #     nn.test(x_test,y_test)
 
-
-
+    
 
 
 config = read_neural_network_config()
 nn = NeuralNetwork(config)
-execute(nn, path_train='neural_network\\dataset\\monks-3.train', path_validation='neural_network\\dataset\\monks-3.train', path_test='neural_network\\dataset\\monks-3.test', test=True)
-
-
-
-
-
+execute(nn, config, test=False)
 
