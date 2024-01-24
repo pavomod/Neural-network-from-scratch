@@ -2,7 +2,7 @@
     "model": {
         "input_size": 17,
         "output_size": 1,
-        "seed": 2002557894,
+        "seed": 1150381646,
         "layers": [
             {
                 "num_neurons": 4,
@@ -18,12 +18,12 @@
     },
     "training": {
         "loss_function": "mean_squared_error",
-        "epochs": 250,
+        "epochs": 150,
         "batch_size": 16,
-        "print_every": 50,
+        "print_every": 100,
         "print_loss":true,
         "learning_rate": 0.05,
-        "regularization_lambda": 0.000,
+        "regularization_lambda": 0,
         "momentum": 0.9,
         "learning_rate_schedule": {
             "approach": "cosine_annealing",

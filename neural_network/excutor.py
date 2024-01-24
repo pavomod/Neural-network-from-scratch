@@ -47,10 +47,10 @@ def execute(nn, config, test=False):
     x_test,y_test = read_dataset(PATH_TEST,encoder_name)
     
     #-----------------TRAIN E VALIDATION-----------------    
-    nn.train(x_train, y_train,x_validaiton,y_validation)
+    nn.train(x_train, y_train,x_validaiton,y_validation, retrain=False)
     
     #-----------------RETRAIN-----------------
-    nn.train(x_retrain,y_retrain,x_validaiton,y_validation)
+    nn.train(x_retrain,y_retrain,x_validaiton,y_validation, retrain=True)
     
     #-----------------TEST-----------------
     if test:

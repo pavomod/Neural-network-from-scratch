@@ -119,7 +119,7 @@ class NeuralNetwork:
             self.weights[i] -= self.velocity_weights[i]
             self.bias[i] -= self.velocity_bias[i]
 
-    def train(self, input_data, target, val_input ,val_target):
+    def train(self, input_data, target, val_input ,val_target,retrain=False):
         self.loss_history = []
         self.val_loss_history = []
         self.early_stopping.reset()
@@ -151,11 +151,17 @@ class NeuralNetwork:
             loss, training_accuracy = self.performance(output_predict,target)
             self.loss_history.append(loss)
             #calcola la loss per il validation
-            val_output=self.predict(val_input)
-            performance_loss, validation_accuracy =self.performance(val_output,val_target)
-            self.val_loss_history.append(performance_loss)
+            if not retrain:
+                val_output=self.predict(val_input)
+                performance_loss, validation_accuracy =self.performance(val_output,val_target)
+                self.val_loss_history.append(performance_loss)
             
-            if self.print_loss and epoch % self.print_every == 0:
+            else:
+                tr_output=self.predict(input_data)
+                performance_loss, validation_accuracy =self.performance(tr_output,target)
+                self.val_loss_history.append(performance_loss)
+            
+            if self.print_loss and epoch % self.print_every == 0 and not retrain:
                 print(f"( Epoch {epoch} ) training loss: {loss}\t validation loss: {performance_loss}")
             
             if self.early_stopping(performance_loss):
@@ -163,8 +169,9 @@ class NeuralNetwork:
                 break
             
             
+            
         if self.print_loss:
-            self.plot_loss_curve(training_accuracy,validation_accuracy)
+            self.plot_loss_curve(training_accuracy,validation_accuracy,retrain)
             
     # calcolo della predizione
     def predict(self, input_data):
@@ -190,8 +197,8 @@ class NeuralNetwork:
         print(f"Accuracy:\t{accuracy_test}%")
     
 
-    def plot_loss_curve(self,training_accuracy,validation_accuracy):
-        plot_loss_curve(self.loss_history,self.val_loss_history,training_accuracy,validation_accuracy)
+    def plot_loss_curve(self,training_accuracy,validation_accuracy,retrain=False):
+        plot_loss_curve(self.loss_history,self.val_loss_history,training_accuracy,validation_accuracy,retrain)
 
     # stampa dei pesi e dei bias della rete neurale
     def printNetwork(self):
