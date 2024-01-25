@@ -1,9 +1,12 @@
 import numpy as np
 from classes import Layer, LossFunction, LearningRateScheduler, EarlyStopping , plot_loss_curve
-import pandas as pd
+
+
+
 
 class NeuralNetwork:
     def __init__(self, settings):
+        self.settings = settings
         self.n_input=settings['model']['input_size']
         self.layers = []
         seed = np.random.randint(0, 2**31 - 1)
@@ -11,7 +14,7 @@ class NeuralNetwork:
             if settings['model']['seed'] != -1:
                 seed = settings['model']['seed'] 
             self.layers.append(Layer(settings['model']['layers'][i]['num_neurons'], settings['model']['layers'][i]['activation_function'], settings['model']['layers'][i]['initialization'], seed))
-        print("Seed: ", seed)
+        #print("Seed: ", seed)
         self.loss_function=LossFunction(settings['training']['loss_function'])
         self.epochs = settings['training']['epochs']
         self.batch_size = settings['training']['batch_size']
@@ -119,10 +122,12 @@ class NeuralNetwork:
             self.weights[i] -= self.velocity_weights[i]
             self.bias[i] -= self.velocity_bias[i]
 
-    def train(self, input_data, target, val_input ,val_target,retrain=False):
+    def train(self, input_data, target, val_input, val_target, retrain=False):
         self.loss_history = []
         self.val_loss_history = []
         self.early_stopping.reset()
+
+
         # Calcolo del numero di mini-batch
         n_samples = input_data.shape[0] 
         n_batches = int(np.ceil(n_samples / self.batch_size))
@@ -135,7 +140,6 @@ class NeuralNetwork:
             target_shuffled = target[permutation]
 
             for batch in range(n_batches): 
-                
                 start = batch * self.batch_size 
                 end = min(start + self.batch_size, n_samples)   
                 batch_input = input_data_shuffled[start:end]
@@ -147,28 +151,26 @@ class NeuralNetwork:
                 self.update(epoch)
             
             # Calcolo della loss per il training
-            output_predict=self.predict(input_data)
+            output_predict = self.predict(input_data)
             loss, training_accuracy = self.performance(output_predict,target)
             self.loss_history.append(loss)
+
             #calcola la loss per il validation
             if not retrain:
                 val_output=self.predict(val_input)
                 performance_loss, validation_accuracy =self.performance(val_output,val_target)
                 self.val_loss_history.append(performance_loss)
-            
             else:
+                # calcola la loss per il retrain
                 tr_output=self.predict(input_data)
-                performance_loss, validation_accuracy =self.performance(tr_output,target)
+                performance_loss, validation_accuracy = self.performance(tr_output,target)
                 self.val_loss_history.append(performance_loss)
             
             if self.print_loss and epoch % self.print_every == 0 and not retrain:
                 print(f"( Epoch {epoch} ) training loss: {loss}\t validation loss: {performance_loss}")
             
             if self.early_stopping(performance_loss):
-                print(f"Early stopping at epoch {epoch}")
                 break
-            
-            
             
         if self.print_loss:
             self.plot_loss_curve(training_accuracy,validation_accuracy,retrain)
@@ -182,7 +184,6 @@ class NeuralNetwork:
         loss = self.loss_function.function(output_target, output_predict)
         accuracy = self.accuracy(output_target, output_predict)
         return loss,accuracy
-
 
 
     def accuracy(self, y_test, y_pred):
@@ -199,6 +200,20 @@ class NeuralNetwork:
 
     def plot_loss_curve(self,training_accuracy,validation_accuracy,retrain=False):
         plot_loss_curve(self.loss_history,self.val_loss_history,training_accuracy,validation_accuracy,retrain)
+
+
+    def get_params(self):
+        params = {
+            "settings": self.settings,
+            "network_configuration":{
+                "weights": self.weights,
+                "bias": self.bias
+            }
+        }
+        return params
+
+
+
 
     # stampa dei pesi e dei bias della rete neurale
     def printNetwork(self):

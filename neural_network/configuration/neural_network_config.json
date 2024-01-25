@@ -43,5 +43,4 @@
     "preprocesing": {
         "name": "one_hot_encode"
     }
-
 }

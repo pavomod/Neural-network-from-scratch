@@ -1,6 +1,6 @@
 import pandas as pd
 
-DATASET_NAME = "monks-1"
+DATASET_NAME = "monks-3"
 DIM_TRAINING_SET = 0.8
 
 # PATH

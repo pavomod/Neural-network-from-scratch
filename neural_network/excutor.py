@@ -4,7 +4,7 @@ from classes import Preprocessing
 from neural_network import NeuralNetwork
 
 
-PATH_CONFIG = "neural_network\\neural_network_config.json"
+PATH_CONFIG = "neural_network\\configuration\\neural_network_config.json"
 
 PATH_TRAIN = "neural_network\\dataset\\data_train_val\\training_set.csv"
 PATH_VALIDATION = "neural_network\\dataset\data_train_val\\validation_set.csv"
