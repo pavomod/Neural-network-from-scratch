@@ -18,6 +18,7 @@ class NeuralNetworkGridSearch:
         self.best_model = None
         self.best_accuracy = 0
         self.best_params = None
+        self.best_score = 0
 
     def generate_tr_vl_sets(self):
         if settings['validation'][0]['enable_k_fold']:
@@ -126,7 +127,8 @@ class NeuralNetworkGridSearch:
             params = self.create_network_settings(setting)
             # creiamo la rete neurale
             model = NeuralNetwork(params)
-            
+            accuracies = []
+
             # addestriamo la rete neurale, iterando su tutti i fold (se abilitato)
             for fold in range(0, iteration):
                 # carichiamo i dati di training e validation
@@ -136,15 +138,21 @@ class NeuralNetworkGridSearch:
                 # calcoliamo le performance del modello
                 loss, accuracy = model.performance(model.predict(input_validation), target_validation)
                 total_accuracy += accuracy
+                accuracies.append(accuracy)
+                
                 
             # calcoliamo l'accuracy media del modello su tutti i training eseguiti
             avg_accuracy = total_accuracy / iteration    
-            
+            # calcoliamo la varianza 
+            variance = sum((x - avg_accuracy) ** 2 for x in accuracies) / len(accuracies)
             #selezioniamo il modello migliore
-            if avg_accuracy > self.best_accuracy:
+            score = avg_accuracy - (variance ** 0.5)
+            
+            if score > self.best_score:
                 self.best_accuracy = avg_accuracy
                 self.best_model = model
                 self.best_params = model.get_params()
+                self.best_score = score
 
             if index % 100 == 0:
                     print(f"Iterazioni effettuate: {index}/{len(self.generate_parameter_combinations())}")

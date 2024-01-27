@@ -15,7 +15,7 @@ def plot_loss_curve(training_loss,validation_loss,training_accuracy,validation_a
     plt.figure(figsize=(10, 6))
     plt.plot(epochs, training_loss, label='Training Loss')
     if not retrain:
-        plt.plot(epochs,validation_loss, label='Validation Loss', color='orange')
+        plt.plot(epochs,validation_loss, label='Validation Loss', color='red')
     x_coord = max(epochs) * 0.4
     y_coord_train = max(training_loss) * 0.9
     y_coord_val = max(validation_loss) * 0.9
