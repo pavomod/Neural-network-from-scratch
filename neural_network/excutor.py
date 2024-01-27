@@ -39,7 +39,7 @@ def read_dataset(path,encoder_name):
 
 
 def execute(nn, config, test=False):
-    encoder_name=config['preprocesing']['name']
+    encoder_name=config['preprocessing']['name']
     #-----------------DATASET-----------------
     x_train,y_train = read_dataset(PATH_TRAIN,encoder_name)
     x_validaiton,y_validation = read_dataset(PATH_VALIDATION,encoder_name)
@@ -50,7 +50,7 @@ def execute(nn, config, test=False):
     nn.train(x_train, y_train,x_validaiton,y_validation, retrain=False)
     
     #-----------------RETRAIN-----------------
-    nn.train(x_retrain,y_retrain,x_validaiton,y_validation, retrain=True)
+    #nn.train(x_retrain,y_retrain,x_validaiton,y_validation, retrain=True)
     
     #-----------------TEST-----------------
     if test:

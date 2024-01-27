@@ -2,29 +2,29 @@
     "model": {
         "input_size": 17,
         "output_size": 1,
-        "seed": 1150381646,
+        "seed": 1036272856,
         "layers": [
             {
-                "num_neurons": 4,
+                "num_neurons": 2,
                 "activation_function": "relu",
-                "initialization": "he_initializer"
+                "initialization": "xavier_initializer"
             },
             {
                 "num_neurons": 1,
                 "activation_function": "sigmoid",
-                "initialization": "xavier_initializer"
+                "initialization": "he_initializer"
             }
         ]
     },
     "training": {
         "loss_function": "mean_squared_error",
-        "epochs": 150,
-        "batch_size": 16,
+        "epochs": 100,
+        "batch_size": 8,
         "print_every": 100,
-        "print_loss":true,
-        "learning_rate": 0.05,
+        "print_loss": true,
+        "learning_rate": 0.1,
         "regularization_lambda": 0,
-        "momentum": 0.9,
+        "momentum": 0.7,
         "learning_rate_schedule": {
             "approach": "cosine_annealing",
             "params": {
@@ -40,7 +40,7 @@
             "min_delta": 0.001
         }
     },
-    "preprocesing": {
+    "preprocessing": {
         "name": "one_hot_encode"
     }
 }

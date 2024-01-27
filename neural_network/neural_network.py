@@ -13,6 +13,8 @@ class NeuralNetwork:
         for i in range (len(settings['model']['layers'])):
             if settings['model']['seed'] != -1:
                 seed = settings['model']['seed'] 
+            else:
+                settings['model']['seed']=seed #salvo il seed
             self.layers.append(Layer(settings['model']['layers'][i]['num_neurons'], settings['model']['layers'][i]['activation_function'], settings['model']['layers'][i]['initialization'], seed))
         #print("Seed: ", seed)
         self.loss_function=LossFunction(settings['training']['loss_function'])
@@ -203,11 +205,14 @@ class NeuralNetwork:
 
 
     def get_params(self):
+        
+        weights_list = [weight.tolist() for weight in self.weights]
+        bias_list = [bias.tolist() for bias in self.bias]
         params = {
             "settings": self.settings,
             "network_configuration":{
-                "weights": self.weights,
-                "bias": self.bias
+                "weights": weights_list,
+                "bias": bias_list
             }
         }
         return params
