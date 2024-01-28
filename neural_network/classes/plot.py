@@ -29,3 +29,17 @@ def plot_loss_curve(training_loss,validation_loss,training_accuracy,validation_a
     plt.ylabel('Loss')
     plt.legend()
     plt.show()
+
+
+def plot_accuracy_curve(tr_accuracy_history, vl_accuracy_history):
+    epochs = range(1, len(tr_accuracy_history) + 1)
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(epochs, tr_accuracy_history, label='Accuracy Training')
+    plt.plot(epochs, vl_accuracy_history, label='Accuracy Validation', color='red')
+    
+    plt.title('Accuracy Curve')
+    plt.xlabel('Epochs')
+    plt.ylabel('Accuracy')
+    plt.legend()
+    plt.show()

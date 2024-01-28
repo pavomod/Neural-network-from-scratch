@@ -1,5 +1,5 @@
 import numpy as np
-from classes import Layer, LossFunction, LearningRateScheduler, EarlyStopping , plot_loss_curve
+from classes import Layer, LossFunction, LearningRateScheduler, EarlyStopping , plot_loss_curve, plot_accuracy_curve
 
 
 
@@ -44,7 +44,10 @@ class NeuralNetwork:
         self.velocity_weights = []              #! velocità dei pesi per ogni layer
         self.velocity_bias = []                 #! velocità dei bias per ogni layer
             
-        self.val_loss_history = []  # Aggiunta per tenere traccia della loss di validazione
+        self.val_loss_history = []              # Aggiunta per tenere traccia della loss di validazione
+        self.tr_accuracy_history = []              # Aggiunta per tenere traccia dell'accuratezza di validazione
+        self.vl_accuracy_history = []              # Aggiunta per tenere traccia dell'accuratezza di validazione
+
         # inizializzazione della rete
         self.__networkInitialization()
     
@@ -124,9 +127,12 @@ class NeuralNetwork:
             self.weights[i] -= self.velocity_weights[i]
             self.bias[i] -= self.velocity_bias[i]
 
+
     def train(self, input_data, target, val_input, val_target, retrain=False):
         self.loss_history = []
         self.val_loss_history = []
+        self.tr_accuracy_history = []
+        self.vl_accuracy_history = []
         self.early_stopping.reset()
 
 
@@ -161,12 +167,14 @@ class NeuralNetwork:
             if not retrain:
                 val_output=self.predict(val_input)
                 performance_loss, validation_accuracy =self.performance(val_output,val_target)
-                self.val_loss_history.append(performance_loss)
             else:
                 # calcola la loss per il retrain
                 tr_output=self.predict(input_data)
                 performance_loss, validation_accuracy = self.performance(tr_output,target)
-                self.val_loss_history.append(performance_loss)
+
+            self.val_loss_history.append(performance_loss)
+            self.tr_accuracy_history.append(training_accuracy)
+            self.vl_accuracy_history.append(validation_accuracy)
             
             if self.print_loss and epoch % self.print_every == 0 and not retrain:
                 print(f"( Epoch {epoch} ) training loss: {loss}\t validation loss: {performance_loss}")
@@ -176,6 +184,7 @@ class NeuralNetwork:
             
         if self.print_loss:
             self.plot_loss_curve(training_accuracy,validation_accuracy,retrain)
+
             
     # calcolo della predizione
     def predict(self, input_data):
@@ -202,6 +211,7 @@ class NeuralNetwork:
 
     def plot_loss_curve(self,training_accuracy,validation_accuracy,retrain=False):
         plot_loss_curve(self.loss_history,self.val_loss_history,training_accuracy,validation_accuracy,retrain)
+        plot_accuracy_curve(self.tr_accuracy_history, self.vl_accuracy_history)
 
 
     def get_params(self):
