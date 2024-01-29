@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from neural_network import NeuralNetwork
 from classes import Preprocessing
-from dataset import simple_splitter, k_fold_splitter
+from dataset import k_fold_cup, simple_splitter_cup
 
 PATH_CONFIG = "neural_network\\configuration\\grid_search_config.json"
 PATH_TRAIN = "neural_network\\dataset\\data_train_val\\training_set.csv"
@@ -22,10 +22,10 @@ class NeuralNetworkGridSearch:
 
     def generate_tr_vl_sets(self):
         if settings['validation'][0]['enable_k_fold']:
-            k_fold_splitter(self.k_folds)
+            k_fold_cup(self.k_folds)
 
         else:
-            simple_splitter()
+            simple_splitter_cup()
 
 
 
@@ -37,8 +37,8 @@ class NeuralNetworkGridSearch:
     def load_simple_data(self,_):
 
         # Qui dovrai dividere il dataset in input e target, ad esempio:
-        input_training, target_training = read_dataset(PATH_TRAIN,"one_hot_encode")
-        input_validation, target_validation = read_dataset(PATH_VALIDATION,"one_hot_encode")
+        input_training, target_training = read_dataset_cup(PATH_TRAIN)
+        input_validation, target_validation = read_dataset_cup(PATH_VALIDATION)
     
         return input_training, target_training, input_validation, target_validation
 
@@ -47,8 +47,8 @@ class NeuralNetworkGridSearch:
         val_set = pd.read_csv(f"neural_network\\dataset\\data_train_val\\k_fold\\validation_set_fold{fold_number}.csv")
 
         # Qui dovrai dividere il dataset in input e target, ad esempio:
-        input_training, target_training = read_dataset(train_set,"one_hot_encode")
-        input_validation, target_validation = read_dataset(val_set,"one_hot_encode")
+        input_training, target_training = read_dataset_cup(train_set,"none")
+        input_validation, target_validation = read_dataset_cup(val_set,"none")
     
         return input_training, target_training, input_validation, target_validation
 
@@ -101,7 +101,7 @@ class NeuralNetworkGridSearch:
                 }
             },
             "preprocessing": {
-                "name": "one_hot_encode"
+                "name": "none"
             }
         }
 
@@ -180,6 +180,19 @@ def read_dataset(path,encoder_name):
     
     return x, y
 
+def read_dataset_cup(path,encoder_name='none'):
+    df = pd.read_csv(path, sep=",", header=None)
+    #df.drop(columns=[df.columns[-1]], inplace=True)
+    
+    x = df.iloc[:, 1:11].values # le prime 10 colonne tranne la prima
+    
+    y = df.iloc[:, 11:].values # gli ultimi 3 valori
+    #y=y.reshape(-1,1)
+    encoder=Preprocessing(encoder_name)
+    x=encoder.encoder(x)
+    
+    return x, y
+
 
 settings = read_grid_search_config()
 
@@ -196,11 +209,15 @@ with open("neural_network\\configuration\\best_params.json", 'w') as file:
 print("="*10)
 print("accuracy -> "+str(accuracy))
 
-
-# TEST
-x_test,y_test = read_dataset(PATH_TEST,"one_hot_encode")
-model.test(x_test,y_test)
-
 #LEARNING CURVE
 model.plot_loss_curve(0,accuracy)
+
+
+# TEST
+
+
+# x_test,y_test = read_dataset(PATH_TEST,"none")
+# model.test(x_test,y_test)
+
+
 

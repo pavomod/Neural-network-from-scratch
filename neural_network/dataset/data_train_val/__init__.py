@@ -1,1 +1,1 @@
-from .split_TR import k_fold_splitter, simple_splitter
+from .split_TR import k_fold_cup, simple_splitter_cup

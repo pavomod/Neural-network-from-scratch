@@ -19,7 +19,7 @@ class Initializer:
             raise ValueError(f"Initializer {name} not implemented")
     
 
-    def uniformInitializer(self, shape:tuple[int,int], min:int=-0.5, max:int=0.5): #! usare valori molto piccolo
+    def uniformInitializer(self, shape:tuple[int,int], min:int=-0.2, max:int=0.2): #! usare valori molto piccolo
         np.random.seed(self.seed)
         return np.random.uniform(min, max, shape)
     

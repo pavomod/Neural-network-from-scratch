@@ -1,1 +1,1 @@
-from .data_train_val import k_fold_splitter, simple_splitter
+from .data_train_val import k_fold_cup, simple_splitter_cup
