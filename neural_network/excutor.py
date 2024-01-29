@@ -38,6 +38,20 @@ def read_dataset(path,encoder_name):
     return x, y
 
 
+def read_dataset_cup(path,encoder_name='none'):
+    df = pd.read_csv(path, sep=",", header=None)
+    #df.drop(columns=[df.columns[-1]], inplace=True)
+    
+    x = df.iloc[:, 1:11].values # tutte le colonne tranne la prima
+    
+    y = df.iloc[:, 11:].values # gli ultimi 3 valori
+    #y=y.reshape(-1,1)
+    encoder=Preprocessing(encoder_name)
+    x=encoder.encoder(x)
+    
+    return x, y
+
+
 def execute(nn, config, test=False):
     encoder_name=config['preprocessing']['name']
     #-----------------DATASET-----------------
@@ -56,10 +70,32 @@ def execute(nn, config, test=False):
     if test:
         nn.test(x_test,y_test)
 
+
+def execute_cup(nn, config, test=False):
+    encoder_name=config['preprocessing']['name']
+    #-----------------DATASET-----------------
+    x_train,y_train = read_dataset_cup(PATH_TRAIN,encoder_name)
+    x_validaiton,y_validation = read_dataset_cup(PATH_VALIDATION,encoder_name)
+    x_retrain,y_retrain = read_dataset_cup(PATH_RETRAIN,encoder_name)
+    x_test,y_test = read_dataset_cup(PATH_TEST,encoder_name)
+    
+    #-----------------TRAIN E VALIDATION-----------------    
+    nn.train(x_train, y_train,x_validaiton,y_validation, retrain=False)
+    
+    #-----------------RETRAIN-----------------
+    #nn.train(x_retrain,y_retrain,x_validaiton,y_validation, retrain=True)
+    
+    #-----------------TEST-----------------
+    if test:
+        nn.predict(x_test)
+
     
 
 
 config = read_neural_network_config()
 nn = NeuralNetwork(config)
-execute(nn, config, test=True)
+#execute(nn, config, test=True)
+execute_cup(nn, config)
+
+
 

@@ -198,8 +198,11 @@ class NeuralNetwork:
 
 
     def accuracy(self, y_test, y_pred):
-        y_pred = np.where(y_pred > 0.5, 1, 0)
-        return round(np.sum(y_test == y_pred) / len(y_test), 3) * 100
+        if self.layers[-1].activation_function.name == 'sigmoid':
+            y_pred = np.where(y_pred > 0.5, 1, 0)
+            return round(np.sum(y_test == y_pred) / len(y_test), 3) * 100
+        else:
+            return LossFunction.mean_euclidean_distance(y_test, y_pred)
     
     def test(self, input_data, target):
         output = self.predict(input_data)

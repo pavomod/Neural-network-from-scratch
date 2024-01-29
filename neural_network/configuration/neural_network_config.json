@@ -1,32 +1,47 @@
 {
     "model": {
-        "input_size": 17,
-        "output_size": 1,
-        "seed": 945932817,
+        "input_size": 10,
+        "output_size": 3,
+        "seed": 42,
         "layers": [
             {
-                "num_neurons": 3,
+                "num_neurons": 10,
                 "activation_function": "relu",
                 "initialization": "xavier_initializer"
             },
             {
-                "num_neurons": 1,
-                "activation_function": "sigmoid",
-                "initialization": "he_initializer"
+                "num_neurons": 20,
+                "activation_function": "relu",
+                "initialization": "xavier_initializer"
+            },
+            {
+                "num_neurons": 20,
+                "activation_function": "relu",
+                "initialization": "xavier_initializer"
+            },
+            {
+                "num_neurons": 2,
+                "activation_function": "relu",
+                "initialization": "xavier_initializer"
+            },
+            {
+                "num_neurons": 3,
+                "activation_function": "linear",
+                "initialization": "xavier_initializer"
             }
         ]
     },
     "training": {
         "loss_function": "mean_squared_error",
-        "epochs": 250,
-        "batch_size": 16,
+        "epochs": 500,
+        "batch_size": 32,
         "print_every": 100,
         "print_loss": true,
-        "learning_rate": 0.05,
+        "learning_rate": 0.001,
         "regularization_lambda": 0,
-        "momentum": 0.9,
+        "momentum": 0.5,
         "learning_rate_schedule": {
-            "approach": "cosine_annealing",
+            "approach": "linear_decay",
             "params": {
                 "min_lr": 0.0001,
                 "decay_rate": 0.8,
@@ -35,12 +50,12 @@
             }
         },
         "early_stopping": {
-            "enabled": true,
+            "enabled": false,
             "patience": 10,
             "min_delta": 0.001
         }
     },
     "preprocessing": {
-        "name": "one_hot_encode"
+        "name": "none"
     }
 }

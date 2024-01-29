@@ -19,17 +19,15 @@ class LossFunction:
         
 
     # Mean Squared Error -------------------------------------------------------
-    def mean_squared_error(self,y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    def mean_squared_error(self,y_true: np.ndarray, y_pred: np.ndarray) -> np.ndarray:
         return np.mean(np.sum(np.power(y_true - y_pred, 2),axis=1))
     
-    def mean_squared_error_derivative(self,y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    def mean_squared_error_derivative(self,y_true: np.ndarray, y_pred: np.ndarray) -> np.ndarray:
         return - (2 / y_true.shape[0]) * (y_true - y_pred)
     
 
     # Mean Absolute Error ------------------------------------------------------
-    def mean_euclidean_distance(self,y_true: float, y_pred: np.ndarray) -> float:
+    @staticmethod
+    def mean_euclidean_distance(y_true: np.ndarray, y_pred: np.ndarray) -> np.ndarray:
         return np.mean(np.sqrt(np.sum(np.power(y_true - y_pred, 2),axis=1)))
     
-    # TODO - rivedere la derivata (ordine (y_pred - y_true) e segno)
-    def mean_euclidean_distance_derivative(self,y_true: np.ndarray, y_pred: np.ndarray) -> float:
-        return - (1 / y_true.shape[0]) * (y_pred - y_true) / np.linalg.norm(y_pred - y_true, axis=1).reshape(-1, 1)
