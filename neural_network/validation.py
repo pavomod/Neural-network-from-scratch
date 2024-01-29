@@ -4,12 +4,18 @@ import numpy as np
 import pandas as pd
 from neural_network import NeuralNetwork
 from classes import Preprocessing
-from dataset import k_fold_cup, simple_splitter_cup
+from dataset import simple_splitter, k_fold_splitter
 
 PATH_CONFIG = "neural_network\\configuration\\grid_search_config.json"
 PATH_TRAIN = "neural_network\\dataset\\data_train_val\\training_set.csv"
 PATH_VALIDATION = "neural_network\\dataset\data_train_val\\validation_set.csv"
 PATH_TEST = "neural_network\\dataset\data_train_val\\test_set.csv"
+IS_CUP = True
+DIM_TRAINING_SET = 0.8
+NAME_MONK = "monks-1"
+
+
+
 class NeuralNetworkGridSearch:
     def __init__(self, settings):
         self.settings = settings
@@ -22,10 +28,10 @@ class NeuralNetworkGridSearch:
 
     def generate_tr_vl_sets(self):
         if settings['validation'][0]['enable_k_fold']:
-            k_fold_cup(self.k_folds)
+            k_fold_splitter(self.k_folds, IS_CUP, NAME_MONK)
 
         else:
-            simple_splitter_cup()
+            simple_splitter(DIM_TRAINING_SET, IS_CUP, NAME_MONK)
 
 
 
@@ -43,8 +49,8 @@ class NeuralNetworkGridSearch:
         return input_training, target_training, input_validation, target_validation
 
     def load_k_fold_data(self, fold_number):
-        train_set = pd.read_csv(f"neural_network\\dataset\\data_train_val\\k_fold\\training_set_fold{fold_number}.csv")
-        val_set = pd.read_csv(f"neural_network\\dataset\\data_train_val\\k_fold\\validation_set_fold{fold_number}.csv")
+        train_set = f"neural_network\\dataset\\data_train_val\\k_fold\\training_set_fold{fold_number}.csv"
+        val_set = f"neural_network\\dataset\\data_train_val\\k_fold\\validation_set_fold{fold_number}.csv"
 
         # Qui dovrai dividere il dataset in input e target, ad esempio:
         input_training, target_training = read_dataset_cup(train_set,"none")
@@ -117,11 +123,11 @@ class NeuralNetworkGridSearch:
             total_accuracy = 0
             #se è abilitato il k-fold, allora carichiamo i dati in modo diverso
             if settings['validation'][0]['enable_k_fold']:
-                load_fun=self.load_simple_data
-                iteration=1
-            else:
                 load_fun=self.load_k_fold_data
                 iteration=self.k_folds
+            else:
+                load_fun=self.load_simple_data
+                iteration=1
                 
             #creiamo i parametri da passare alla rete neurale
             params = self.create_network_settings(setting)
@@ -199,7 +205,7 @@ settings = read_grid_search_config()
 
 #MODEL SELECTION
 grid_search = NeuralNetworkGridSearch(settings)
-model, accuracy, params =grid_search.search()
+model, accuracy, params = grid_search.search()
 
 #write params on file
 with open("neural_network\\configuration\\best_params.json", 'w') as file:

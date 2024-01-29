@@ -121,9 +121,15 @@ class NeuralNetwork:
 
     def update(self, epoch):
         for i in range(len(self.weights)):
+            # clipping dei gradienti
+            self.grad_weights[i] = np.clip(self.grad_weights[i], -1, 1)
+            self.grad_bias[i] = np.clip(self.grad_bias[i], -1, 1)
+
+            # aggiornamento della velocità dei pesi e dei bias
             self.velocity_weights[i] = self.momentum * self.velocity_weights[i] + self.learning_rate.update_func(epoch) * (self.grad_weights[i] + self.regularization_lambda * self.weights[i])
             self.velocity_bias[i] = self.momentum * self.velocity_bias[i] + self.learning_rate.update_func(epoch) * self.grad_bias[i]
             
+            # aggiornamento dei pesi e dei bias
             self.weights[i] -= self.velocity_weights[i]
             self.bias[i] -= self.velocity_bias[i]
 
