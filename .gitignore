@@ -7,4 +7,6 @@ env/
 
 .vscode/
 
+*.csv
+
 note.txt

@@ -6,16 +6,19 @@ def simple_splitter(dim_training_set, isCup, name_monks):
     # PATH
     file_path = "neural_network\\dataset\\"
     test_path="neural_network\\dataset\\"
+    skiprows=0
     if isCup:
         file_path += "ML-CUP23-TR.csv"
         test_path += "ML-CUP23-TS.csv"
+        skiprows=7
     else:
         file_path += name_monks+".train"
         test_path += name_monks+".test"
+        skiprows=0
 
     # Legge il dataset
-    dataset = pd.read_csv(file_path)
-    test_set = pd.read_csv(test_path)
+    dataset = pd.read_csv(file_path, skiprows=skiprows)
+    test_set = pd.read_csv(test_path, skiprows=skiprows)
 
     # Divide il dataset in training set e validation set
     train_set = dataset.sample(frac=dim_training_set)
@@ -72,3 +75,5 @@ def k_fold_splitter(k_folds=4, isCup=False, name_monks="monks-1"):
         val_set.to_csv(f"neural_network\\dataset\\data_train_val\\k_fold\\validation_set_fold{fold+1}.csv", index=False)
     
     test_set.to_csv("neural_network\\dataset\\data_train_val\\test_set.csv", index=False)
+
+
