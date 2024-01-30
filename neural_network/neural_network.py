@@ -16,7 +16,7 @@ class NeuralNetwork:
             else:
                 settings['model']['seed']=seed #salvo il seed
             self.layers.append(Layer(settings['model']['layers'][i]['num_neurons'], settings['model']['layers'][i]['activation_function'], settings['model']['layers'][i]['initialization'], seed))
-        #print("Seed: ", seed)
+
         self.loss_function=LossFunction(settings['training']['loss_function'])
         self.epochs = settings['training']['epochs']
         self.batch_size = settings['training']['batch_size']
@@ -47,6 +47,10 @@ class NeuralNetwork:
         self.val_loss_history = []              # Aggiunta per tenere traccia della loss di validazione
         self.tr_accuracy_history = []              # Aggiunta per tenere traccia dell'accuratezza di validazione
         self.vl_accuracy_history = []              # Aggiunta per tenere traccia dell'accuratezza di validazione
+
+
+        if self.print_loss:
+            print("Seed: ",seed)
 
         # inizializzazione della rete
         self.__networkInitialization()
