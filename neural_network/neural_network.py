@@ -188,6 +188,8 @@ class NeuralNetwork:
             
             if self.print_loss and epoch % self.print_every == 0 and not retrain:
                 print(f"( Epoch {epoch} ) training loss: {loss}\t validation loss: {performance_loss}")
+            if self.print_loss and epoch == self.epochs-1 and not retrain:
+                print(f"( Epoch {epoch} ) training loss: {loss}\t validation loss: {performance_loss}")
             
             if self.early_stopping(performance_loss):
                 break

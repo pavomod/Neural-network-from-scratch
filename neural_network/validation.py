@@ -43,8 +43,12 @@ class NeuralNetworkGridSearch:
     def load_simple_data(self,_):
 
         # Qui dovrai dividere il dataset in input e target, ad esempio:
-        input_training, target_training = read_dataset_cup(PATH_TRAIN)
-        input_validation, target_validation = read_dataset_cup(PATH_VALIDATION)
+        if IS_CUP:
+            input_training, target_training = read_dataset_cup(PATH_TRAIN)
+            input_validation, target_validation = read_dataset_cup(PATH_VALIDATION)
+        else:
+            input_training, target_training = read_dataset(PATH_TRAIN,"one_hot_encode")
+            input_validation, target_validation = read_dataset(PATH_VALIDATION,"one_hot_encode")
     
         return input_training, target_training, input_validation, target_validation
 
@@ -52,9 +56,12 @@ class NeuralNetworkGridSearch:
         train_set = f"neural_network\\dataset\\data_train_val\\k_fold\\training_set_fold{fold_number}.csv"
         val_set = f"neural_network\\dataset\\data_train_val\\k_fold\\validation_set_fold{fold_number}.csv"
 
-        # Qui dovrai dividere il dataset in input e target, ad esempio:
-        input_training, target_training = read_dataset_cup(train_set,"none")
-        input_validation, target_validation = read_dataset_cup(val_set,"none")
+        if IS_CUP:
+            input_training, target_training = read_dataset_cup(train_set)
+            input_validation, target_validation = read_dataset_cup(val_set)
+        else:
+            input_training, target_training = read_dataset(train_set,"one_hot_encode")
+            input_validation, target_validation = read_dataset(val_set,"one_hot_encode")
     
         return input_training, target_training, input_validation, target_validation
 
@@ -160,7 +167,7 @@ class NeuralNetworkGridSearch:
                 self.best_params = model.get_params()
                 self.best_score = score
 
-            if index % 100 == 0:
+            if index % 30 == 0:
                     print(f"Iterazioni effettuate: {index}/{len(self.generate_parameter_combinations())}")
                     
         return self.best_model, self.best_accuracy, self.best_params
