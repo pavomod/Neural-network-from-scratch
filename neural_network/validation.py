@@ -9,6 +9,7 @@ from dataset import simple_splitter, k_fold_splitter
 PATH_CONFIG = "neural_network\\configuration\\grid_search_config.json"
 PATH_TRAIN = "neural_network\\dataset\\data_train_val\\training_set.csv"
 PATH_VALIDATION = "neural_network\\dataset\data_train_val\\validation_set.csv"
+PATH_HOLD_OUT = "neural_network\\dataset\data_train_val\\k_fold\\hold_out.csv"
 PATH_TEST = "neural_network\\dataset\data_train_val\\test_set.csv"
 IS_CUP = True
 DIM_TRAINING_SET = 0.8
@@ -24,11 +25,14 @@ class NeuralNetworkGridSearch:
         self.best_model = None
         self.best_accuracy = 0
         self.best_params = None
-        self.best_score = 0
+        if IS_CUP:
+            self.best_score = +np.inf
+        else:
+            self.best_score = -np.inf
 
     def generate_tr_vl_sets(self):
         if settings['validation'][0]['enable_k_fold']:
-            k_fold_splitter(self.k_folds, IS_CUP, NAME_MONK)
+            k_fold_splitter(k_folds=self.k_folds, isCup=IS_CUP, name_monks=NAME_MONK)
 
         else:
             simple_splitter(DIM_TRAINING_SET, IS_CUP, NAME_MONK)
@@ -152,16 +156,21 @@ class NeuralNetworkGridSearch:
                 loss, accuracy = model.performance(model.predict(input_validation), target_validation)
                 total_accuracy += accuracy
                 accuracies.append(accuracy)
-                
-                
+
             # calcoliamo l'accuracy media del modello su tutti i training eseguiti
             avg_accuracy = total_accuracy / iteration    
             # calcoliamo la varianza 
             variance = sum((x - avg_accuracy) ** 2 for x in accuracies) / len(accuracies)
             #selezioniamo il modello migliore
+            
             score = avg_accuracy - (variance ** 0.5)
             
-            if score > self.best_score:
+            if IS_CUP:
+                check = score < self.best_score
+            else:
+                check = score > self.best_score
+                
+            if check:
                 self.best_accuracy = avg_accuracy
                 self.best_model = model
                 self.best_params = model.get_params()
@@ -222,15 +231,27 @@ with open("neural_network\\configuration\\best_params.json", 'w') as file:
 print("="*10)
 print("accuracy -> "+str(accuracy))
 
+
 #LEARNING CURVE
-model.plot_loss_curve(0,accuracy)
+
 
 
 # TEST
 
-
-# x_test,y_test = read_dataset(PATH_TEST,"none")
-# model.test(x_test,y_test)
+if IS_CUP:
+    x_train,y_train = read_dataset_cup(PATH_TRAIN,"none")
+    x_val,y_val = read_dataset_cup(PATH_VALIDATION,"none")
+    model.train(x_train,y_train,x_val,y_val)
+    x_test,y_test = read_dataset_cup(PATH_HOLD_OUT,"none")
+    model.test(x_test,y_test)
+    model.plot_loss_curve(0,0)
+else:
+    x_train,y_train = read_dataset(PATH_TRAIN,"none")
+    x_val,y_val = read_dataset(PATH_VALIDATION,"none")
+    model.train(x_train,y_train,x_val,y_val)
+    x_test,y_test = read_dataset(PATH_HOLD_OUT,"none")
+    model.test(x_test,y_test)
+    model.plot_loss_curve(0,0)
 
 
 

@@ -31,31 +31,30 @@ def simple_splitter(dim_training_set, isCup, name_monks):
     dataset.to_csv("neural_network\\dataset\\data_train_val\\retrain_set.csv", index=False)
 
 
-# divide il dataset in k-fold
-def k_fold_splitter(k_folds=4, isCup=False, name_monks="monks-1"):
+def k_fold_splitter(k_folds=4, hold_out_fraction=0.1, isCup=False, name_monks="monks-1"):
     if k_folds < 2:
         raise ValueError("k_folds deve essere maggiore o uguale a 2")
     
     # PATH
     file_path = "neural_network\\dataset\\"
-    test_path="neural_network\\dataset\\"
     skiprows=0
     if isCup:
         file_path += "ML-CUP23-TR.csv"
-        test_path += "ML-CUP23-TS.csv"
         skiprows=7
     else:
         file_path += name_monks+".train"
-        test_path += name_monks+".test"
-        skiprows=0
 
     # Legge il dataset
     dataset = pd.read_csv(file_path, skiprows=skiprows)
-    test_set = pd.read_csv(test_path, skiprows=skiprows)
 
-    # Mescola il dataset
-    shuffled_dataset = dataset.sample(frac=1).reset_index(drop=True)
+    # Divide il dataset in hold out set e il resto
+    
+    hold_out_set = dataset.sample(frac=hold_out_fraction)
+    remaining_set = dataset.drop(hold_out_set.index)
 
+    # Mescola il dataset rimanente
+    shuffled_dataset = remaining_set.sample(frac=1).reset_index(drop=True)
+    
     # Calcola la dimensione di ciascun fold
     fold_size = len(shuffled_dataset) // k_folds
 
@@ -74,6 +73,10 @@ def k_fold_splitter(k_folds=4, isCup=False, name_monks="monks-1"):
         train_set.to_csv(f"neural_network\\dataset\\data_train_val\\k_fold\\training_set_fold{fold+1}.csv", index=False)
         val_set.to_csv(f"neural_network\\dataset\\data_train_val\\k_fold\\validation_set_fold{fold+1}.csv", index=False)
     
-    test_set.to_csv("neural_network\\dataset\\data_train_val\\test_set.csv", index=False)
+    # Salva il hold out set e il test set
+    
+    hold_out_set.to_csv("neural_network\\dataset\\data_train_val\\k_fold\\hold_out.csv", index=False)
+    
 
 
+# simple_splitter(0.8, True, "monks-1")
