@@ -11,11 +11,11 @@ def plot_loss_curve(training_loss,validation_loss,training_accuracy=0,validation
     """
 
     epochs = range(1, len(training_loss) + 1)
-
+    #grid background
     plt.figure(figsize=(10, 6))
-    plt.plot(epochs, training_loss, label='Training Loss', marker='o')
+    plt.plot(epochs, training_loss, label='Training Loss')
     if not retrain:
-        plt.plot(epochs,validation_loss, label='Validation Loss', color='red',marker='o')
+        plt.plot(epochs,validation_loss, label='Validation Loss', color='red')
     # x_coord = max(epochs) * 0.4
     # y_coord_train = max(training_loss) * 0.9
     # y_coord_val = max(validation_loss) * 0.9
@@ -28,12 +28,12 @@ def plot_loss_curve(training_loss,validation_loss,training_accuracy=0,validation
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
     plt.legend()
+    plt.grid(True)
     plt.show()
 
 
 def plot_accuracy_curve(tr_accuracy_history, vl_accuracy_history):
     epochs = range(1, len(tr_accuracy_history) + 1)
-
     plt.figure(figsize=(10, 6))
     plt.plot(epochs, tr_accuracy_history, label='Accuracy Training')
     plt.plot(epochs, vl_accuracy_history, label='Accuracy Validation', color='red')
@@ -42,4 +42,5 @@ def plot_accuracy_curve(tr_accuracy_history, vl_accuracy_history):
     plt.xlabel('Epochs')
     plt.ylabel('Accuracy')
     plt.legend()
+    plt.grid(True)
     plt.show()

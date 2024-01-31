@@ -141,6 +141,8 @@ def mean_execute(retrain, test, training_set_size, isCup, name_monks,train_numbe
     
     avg_train_loss = [x / train_number for x in avg_train_loss]
     avg_validation_loss = [x / train_number for x in avg_validation_loss]
+    avg_train_accuracy_loss = [x / train_number for x in avg_train_accuracy_loss]
+    avg_validation_accuracy_loss = [x / train_number for x in avg_validation_accuracy_loss]
     
     #plot
     print("SUMMARY TRAINING")
@@ -150,9 +152,9 @@ def mean_execute(retrain, test, training_set_size, isCup, name_monks,train_numbe
     print("avg_validation_loss")
     print(avg_validation_loss[-1])
     print("avg_train_accuracy_loss")
-    print(avg_train_accuracy_loss[-1]/train_number,"%")
+    print(avg_train_accuracy_loss[-1],"%")
     print("avg_validation_accuracy_loss")
-    print(avg_validation_accuracy_loss[-1]/train_number,"%")
+    print(avg_validation_accuracy_loss[-1],"%")
     plot_loss_curve(avg_train_loss,avg_validation_loss)
     plot_accuracy_curve(avg_train_accuracy_loss,avg_validation_accuracy_loss)
     if test:
@@ -161,10 +163,10 @@ def mean_execute(retrain, test, training_set_size, isCup, name_monks,train_numbe
 
 # define parameters
 retrain=False
-test=False
+test=True
 training_set_size=0.8
 isCup=False
-name_monks="monks-1"
+name_monks="monks-3"
 train_number=10
 # create and execute neural network
 #create_neural_network(retrain, test, training_set_size, isCup, name_monks)
