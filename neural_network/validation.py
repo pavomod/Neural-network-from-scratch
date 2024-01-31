@@ -9,6 +9,7 @@ from dataset import simple_splitter, k_fold_splitter
 PATH_CONFIG = "neural_network\\configuration\\grid_search_config.json"
 PATH_TRAIN = "neural_network\\dataset\\data_train_val\\training_set.csv"
 PATH_VALIDATION = "neural_network\\dataset\data_train_val\\validation_set.csv"
+PATH_RETRAIN = "neural_network\\dataset\data_train_val\\retrain_set.csv"
 PATH_HOLD_OUT = "neural_network\\dataset\data_train_val\\k_fold\\hold_out.csv"
 PATH_TEST = "neural_network\\dataset\data_train_val\\test_set.csv"
 IS_CUP = True
@@ -264,9 +265,9 @@ print("accuracy -> "+str(accuracy))
 # TEST
 
 if IS_CUP:
-    x_train,y_train = read_dataset_cup(PATH_TRAIN)
+    x_train,y_train = read_dataset_cup(PATH_RETRAIN)
     x_val,y_val = read_dataset_cup(PATH_VALIDATION)
-    model.train(x_train,y_train,x_val,y_val)
+    #model.train(x_train,y_train,x_val,y_val)
     x_test,y_test = read_dataset_cup(PATH_HOLD_OUT)
     model.test(x_test,y_test)
     model.plot_loss_curve(0,0)

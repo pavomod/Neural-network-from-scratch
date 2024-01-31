@@ -139,10 +139,10 @@ class NeuralNetwork:
 
 
     def train(self, input_data, target, val_input, val_target, retrain=False):
-        # self.loss_history = []
-        # self.val_loss_history = []
-        # self.tr_accuracy_history = []
-        # self.vl_accuracy_history = []
+        self.loss_history = []
+        self.val_loss_history = []
+        self.tr_accuracy_history = []
+        self.vl_accuracy_history = []
         self.early_stopping.reset()
 
 

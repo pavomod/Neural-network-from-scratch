@@ -2,7 +2,7 @@ import json
 import pandas as pd
 from classes import Preprocessing, plot_loss_curve, plot_accuracy_curve
 from neural_network import NeuralNetwork
-from dataset import simple_splitter
+from dataset import simple_splitter,splitter_tr_vl_ts
 
 
 PATH_CONFIG = "neural_network\\configuration\\neural_network_config.json"
@@ -70,8 +70,8 @@ def create_neural_network(retrain, test, training_set_size, isCup, name_monks):
     nn = NeuralNetwork(config)
 
     # create from dataset the training set, validation set, test set and retrain set
-    simple_splitter(training_set_size, isCup, name_monks)
-
+    #simple_splitter(training_set_size, isCup, name_monks)
+    splitter_tr_vl_ts()
     # set correct function to read dataset
     if isCup:
         read = read_dataset_cup
@@ -85,12 +85,24 @@ def create_neural_network(retrain, test, training_set_size, isCup, name_monks):
     x_test, y_test = read(PATH_TEST, encoder_name)
 
     #-----------------TRAIN E VALIDATION-----------------
-    nn.train(x_train, y_train, x_validation, y_validation, retrain=False)
-
+    tr_loss,vl_loss,tr_accuracy,vl_accuracy=nn.train(x_train, y_train, x_validation, y_validation, retrain=False)
+    print("SUMMARY TRAINING")
+    print("="*10)
+    print("tr_accuracy")
+    print(tr_accuracy[-1],"%")
+    print("tr_loss")
+    print(tr_loss[-1])
+    print("SUMMARY VALIDATION")
+    print("="*10)
+    print("vl_accuracy")
+    print(vl_accuracy[-1],"%")
+    print("vl_loss")
+    print(vl_loss[-1])
     #-----------------RETRAIN-----------------
     if retrain:
         print("Retraining...")
         nn.train(x_retrain, y_retrain, x_validation, y_validation, retrain=True)
+        
     
     #-----------------TEST-----------------
     if test:
@@ -162,8 +174,8 @@ def mean_execute(retrain, test, training_set_size, isCup, name_monks,train_numbe
     
 
 # define parameters
-retrain=False
-test=False
+retrain=True
+test=True
 training_set_size=0.8
 isCup=True
 name_monks="monks-3"

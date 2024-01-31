@@ -15,7 +15,7 @@ def simple_splitter(dim_training_set, isCup, name_monks):
         file_path += name_monks+".train"
         test_path += name_monks+".test"
         skiprows=0
-
+    
     # Legge il dataset
     dataset = pd.read_csv(file_path, skiprows=skiprows)
     test_set = pd.read_csv(test_path, skiprows=skiprows)
@@ -30,6 +30,28 @@ def simple_splitter(dim_training_set, isCup, name_monks):
     test_set.to_csv("neural_network\\dataset\\data_train_val\\test_set.csv", index=False)
     dataset.to_csv("neural_network\\dataset\\data_train_val\\retrain_set.csv", index=False)
 
+
+def splitter_tr_vl_ts():
+    # Legge il dataset
+    file_path = "neural_network\\dataset\\ML-CUP23-TR.csv"
+    dataset = pd.read_csv(file_path, skiprows=7)
+    
+    # Mescola il dataset
+    dataset_shuffled = dataset.sample(frac=1, random_state=42).reset_index(drop=True)
+    
+    # Calcola gli indici per il training (70%), validation (20%) e test (10%)
+    total_rows = len(dataset_shuffled)
+    train_end = int(total_rows * 0.7)
+    validation_end = int(total_rows * 0.9)  # 70% + 20% = 90%
+    
+    # Divide il dataset
+    train_dataset = dataset_shuffled.iloc[:train_end]
+    validation_dataset = dataset_shuffled.iloc[train_end:validation_end]
+    test_dataset = dataset_shuffled.iloc[validation_end:]
+    
+    train_dataset.to_csv("neural_network\\dataset\\data_train_val\\training_set.csv", index=False)
+    validation_dataset.to_csv("neural_network\\dataset\\data_train_val\\validation_set.csv", index=False)
+    test_dataset.to_csv("neural_network\\dataset\\data_train_val\\test_set.csv", index=False)
 
 def k_fold_splitter(k_folds=4, hold_out_fraction=0.1, isCup=False, name_monks="monks-1"):
     if k_folds < 2:
