@@ -196,7 +196,8 @@ class NeuralNetwork:
             
         if self.print_loss:
             self.plot_loss_curve(training_accuracy,validation_accuracy,retrain)
-
+            
+        return self.loss_history, self.val_loss_history, self.tr_accuracy_history, self.vl_accuracy_history
             
     # calcolo della predizione
     def predict(self, input_data):

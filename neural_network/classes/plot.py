@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 
 
-def plot_loss_curve(training_loss,validation_loss,training_accuracy,validation_accuracy,retrain=False):
+def plot_loss_curve(training_loss,validation_loss,training_accuracy=0,validation_accuracy=0,retrain=False):
     """
     Plot a learning curve using the provided loss values.
 
@@ -13,16 +13,16 @@ def plot_loss_curve(training_loss,validation_loss,training_accuracy,validation_a
     epochs = range(1, len(training_loss) + 1)
 
     plt.figure(figsize=(10, 6))
-    plt.plot(epochs, training_loss, label='Training Loss')
+    plt.plot(epochs, training_loss, label='Training Loss', marker='o')
     if not retrain:
-        plt.plot(epochs,validation_loss, label='Validation Loss', color='red')
-    x_coord = max(epochs) * 0.4
-    y_coord_train = max(training_loss) * 0.9
-    y_coord_val = max(validation_loss) * 0.9
+        plt.plot(epochs,validation_loss, label='Validation Loss', color='red',marker='o')
+    # x_coord = max(epochs) * 0.4
+    # y_coord_train = max(training_loss) * 0.9
+    # y_coord_val = max(validation_loss) * 0.9
 
-    plt.text(x_coord, y_coord_train, "Training accuracy: " + str(training_accuracy) + "%")
-    if not retrain:
-        plt.text(x_coord, y_coord_val, "Validation accuracy: " + str(validation_accuracy) + "%")
+    # plt.text(x_coord, y_coord_train, "Training accuracy: " + str(training_accuracy) + "%")
+    # if not retrain:
+    #     plt.text(x_coord, y_coord_val, "Validation accuracy: " + str(validation_accuracy) + "%")
 
     plt.title('Learning Curve')
     plt.xlabel('Epochs')
