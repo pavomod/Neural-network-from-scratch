@@ -28,7 +28,7 @@ def read_neural_network_config():
 
 
 # read dataset about monks
-def read_dataset(path, encoder_name):
+def read_dataset(path, encoder_name="standardization"):
     df = pd.read_csv(path, sep=" ", header=None)
     df.drop(columns=[df.columns[-1]], inplace=True)
     
@@ -46,7 +46,7 @@ def read_dataset(path, encoder_name):
 
 
 # read dataset about CUP
-def read_dataset_cup(path, encoder_name):
+def read_dataset_cup(path, encoder_name="standardization"):
     df = pd.read_csv(path, sep=",", header=None)
     
     # get input
@@ -163,11 +163,11 @@ def mean_execute(retrain, test, training_set_size, isCup, name_monks,train_numbe
 
 # define parameters
 retrain=False
-test=True
+test=False
 training_set_size=0.8
-isCup=False
+isCup=True
 name_monks="monks-3"
 train_number=10
 # create and execute neural network
-#create_neural_network(retrain, test, training_set_size, isCup, name_monks)
-mean_execute(retrain, test, training_set_size, isCup, name_monks,train_number)
+create_neural_network(retrain, test, training_set_size, isCup, name_monks)
+#mean_execute(retrain, test, training_set_size, isCup, name_monks,train_number)

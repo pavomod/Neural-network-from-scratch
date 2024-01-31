@@ -25,6 +25,8 @@ class NeuralNetworkGridSearch:
         self.best_model = None
         self.best_accuracy = 0
         self.best_params = None
+        self.top_five = []
+        
         if IS_CUP:
             self.best_score = +np.inf
         else:
@@ -118,7 +120,7 @@ class NeuralNetworkGridSearch:
                 }
             },
             "preprocessing": {
-                "name": "none"
+                "name": "standardization"
             }
         }
 
@@ -175,12 +177,35 @@ class NeuralNetworkGridSearch:
                 self.best_model = model
                 self.best_params = model.get_params()
                 self.best_score = score
+                self.update_top_five_models(model, score, avg_accuracy, params)
 
-            if index % 30 == 0:
+            if index % 5 == 0:
                     print(f"Iterazioni effettuate: {index}/{len(self.generate_parameter_combinations())}")
-                    
+        
+        # save top_five model in a file
+        with open("neural_network\\configuration\\top_five.json", 'w') as file:
+            json.dump(self.top_five, file, indent=4)
+            
+        
         return self.best_model, self.best_accuracy, self.best_params
 
+    def update_top_five_models(self, model, score, accuracy, params):
+        model_info = {
+            'score': score,
+            'accuracy': accuracy,
+            'params': params
+        }
+        
+        self.top_five.append(model_info)
+        # Ordina per score la lista
+        if IS_CUP:
+            reverse=True
+        else:
+            reverse=False
+        self.top_five.sort(key=lambda x: x['score'],reverse=reverse)
+        # Mantiene solo i top 5 modelli
+        self.top_five = self.top_five[:5]
+        
 
 
 def read_grid_search_config():
@@ -202,7 +227,7 @@ def read_dataset(path,encoder_name):
     
     return x, y
 
-def read_dataset_cup(path,encoder_name='none'):
+def read_dataset_cup(path,encoder_name='standardization'):
     df = pd.read_csv(path, sep=",", header=None)
     #df.drop(columns=[df.columns[-1]], inplace=True)
     
@@ -239,10 +264,10 @@ print("accuracy -> "+str(accuracy))
 # TEST
 
 if IS_CUP:
-    x_train,y_train = read_dataset_cup(PATH_TRAIN,"none")
-    x_val,y_val = read_dataset_cup(PATH_VALIDATION,"none")
+    x_train,y_train = read_dataset_cup(PATH_TRAIN)
+    x_val,y_val = read_dataset_cup(PATH_VALIDATION)
     model.train(x_train,y_train,x_val,y_val)
-    x_test,y_test = read_dataset_cup(PATH_HOLD_OUT,"none")
+    x_test,y_test = read_dataset_cup(PATH_HOLD_OUT)
     model.test(x_test,y_test)
     model.plot_loss_curve(0,0)
 else:
