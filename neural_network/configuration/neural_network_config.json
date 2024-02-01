@@ -2,41 +2,51 @@
     "model": {
         "input_size": 10,
         "output_size": 3,
-        "seed": 887988982,
+        "seed": 1799893435,
         "layers": [
             {
-                "num_neurons": 10,
-                "activation_function": "relu",
-                "initialization": "xavier_initializer"
+                "num_neurons": 20,
+                "activation_function": "tanh",
+                "initialization": "he_initializer"
             },
             {
-                "num_neurons": 10,
-                "activation_function": "relu",
-                "initialization": "xavier_initializer"
+                "num_neurons": 30,
+                "activation_function": "tanh",
+                "initialization": "he_initializer"
             },
             {
-                "num_neurons": 10,
+                "num_neurons": 20,
+                "activation_function": "tanh",
+                "initialization": "he_initializer"
+            },
+            {
+                "num_neurons": 30,
+                "activation_function": "tanh",
+                "initialization": "he_initializer"
+            },
+            {
+                "num_neurons": 25,
                 "activation_function": "relu",
-                "initialization": "xavier_initializer"
+                "initialization": "he_initializer"
             },
             {
                 "num_neurons": 3,
                 "activation_function": "linear",
-                "initialization": "he_initializer"
+                "initialization": "uniform_initializer"
             }
         ]
     },
     "training": {
         "loss_function": "mean_squared_error",
         "epochs": 500,
-        "batch_size": 64,
+        "batch_size": 40,
         "print_every": 100,
         "print_loss": true,
-        "learning_rate": 0.01,
-        "regularization_lambda": 0,
-        "momentum": 0.9,
+        "learning_rate": 0.001,
+        "regularization_lambda": 0.0008,
+        "momentum": 0.92,
         "learning_rate_schedule": {
-            "approach": "exponential_decay",
+            "approach": "cosine_annealing",
             "params": {
                 "min_lr": 0.0001,
                 "decay_rate": 0.8,
@@ -45,12 +55,12 @@
             }
         },
         "early_stopping": {
-            "enabled": false,
-            "patience": 10,
+            "enabled": true,
+            "patience": 50,
             "min_delta": 0.0001
         }
     },
     "preprocessing": {
-        "name": "none"
+        "name": "normalization"
     }
 }
