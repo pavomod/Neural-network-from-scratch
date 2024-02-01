@@ -1,13 +1,13 @@
 import numpy as np
 
 class Preprocessing:
-
     def __init__(self, name: str):
-        self.name = name
+        self.name = name    # Name of the preprocessing technique
+        # Retrieves the appropriate preprocessing function based on the name provided
         self.encoder = self.__get(name)
         
     def __get(self, name: str):
-        # Return the appropriate preprocessing function based on the name
+        # Associates preprocessing technique names with their respective functions
         if name == 'standardization':
             return self.__standardization
         elif name == 'normalization':
@@ -17,15 +17,15 @@ class Preprocessing:
         elif name == 'none':
             return self.__none
         else:
-            # If an invalid name is provided, raise an error
             raise ValueError('Invalid preprocessing function')
-        
-    # Returns the matrix as is (no preprocessing)
+
+    # No preprocessing: returns the matrix as is
     def __none(self, matrix):
         return matrix
-    
-    # Define the number of unique values for each column (hardcoded for simplicity)
+
+    # One-hot encoding preprocessing
     def __one_hot_encode(self, matrix):
+        # Define the number of unique values for each column (hardcoded for simplicity)
         unique_values = [3, 3, 2, 3, 4, 2]
 
         # Calculate the total number of one-hot columns
@@ -48,17 +48,19 @@ class Preprocessing:
             start_index += n_values
 
         return encoded_matrix
-    
-    # Calculate the mean and standard deviation for each column
+
+    # Standardization preprocessing
     def __standardization(self, matrix):
+        # Calculate the mean and standard deviation for each column
         mean = np.mean(matrix, axis=0)
         std = np.std(matrix, axis=0)
         # Standardize the matrix
         standardized_matrix = (matrix - mean) / std
         return standardized_matrix
-    
-    # Find the minimum and maximum values for each column
+
+    # Normalization preprocessing
     def __normalization(self, matrix):
+        # Find the minimum and maximum values for each column
         min_val = np.min(matrix, axis=0)
         max_val = np.max(matrix, axis=0)
         # Normalize the matrix
