@@ -218,6 +218,6 @@ train_number=10
 blind_test=True
 
 # create and execute neural network
-#create_neural_network(retrain, test, training_set_size, isCup, name_monks,blind_test)
-mean_execute(retrain, test, training_set_size, isCup, name_monks,train_number)
+create_neural_network(retrain, test, training_set_size, isCup, name_monks,blind_test)
+#mean_execute(retrain, test, training_set_size, isCup, name_monks,train_number)
 
