@@ -60,8 +60,19 @@ def read_dataset_cup(path, encoder_name="standardization"):
     x=encoder.encoder(x)
     return x, y
 
+def read_blind(path, encoder_name="normalization"):
+    df = pd.read_csv(path, sep=",", header=None,skiprows=7)
+    
+    # get input
+    x = df.iloc[:, 1:11].values
+    
+    # preprocessing of input
+    encoder=Preprocessing(encoder_name)
+    x=encoder.encoder(x)
+    return x
+
 # create and execute neural network
-def create_neural_network(retrain, test, training_set_size, isCup, name_monks):
+def create_neural_network(retrain, test, training_set_size, isCup, name_monks,blind_test):
     # read file of configuration
     config  = read_neural_network_config()
     encoder_name = config['preprocessing']['name']
@@ -83,7 +94,9 @@ def create_neural_network(retrain, test, training_set_size, isCup, name_monks):
     x_validation, y_validation = read(PATH_VALIDATION, encoder_name)
     x_retrain, y_retrain = read(PATH_RETRAIN, encoder_name)
     x_test, y_test = read(PATH_TEST, encoder_name)
-
+    x_blind_test = read_blind("neural_network\\dataset\\ML-CUP23-TS.csv", encoder_name)
+    
+    
     #-----------------TRAIN E VALIDATION-----------------
     tr_loss,vl_loss,tr_accuracy,vl_accuracy=nn.train(x_train, y_train, x_validation, y_validation, retrain=False)
     print("SUMMARY TRAINING")
@@ -108,6 +121,13 @@ def create_neural_network(retrain, test, training_set_size, isCup, name_monks):
     if test:
         print("Testing...")
         nn.test(x_test,y_test)
+    if blind_test:
+        print("Blind Testing...")
+        output=nn.predict(x_blind_test)
+        #save in a file
+        with open("neural_network\\dataset\\blind_test\\Neurons_Not_Found_ML-CUP23-TS.csv", 'w') as file:
+            for i in range(len(output)):
+                file.write(str(i+1)+","+str(output[i][0])+","+str(output[i][1])+","+str(output[i][2])+"\n")
 
 
 def mean_execute(retrain, test, training_set_size, isCup, name_monks,train_number=10):
@@ -180,6 +200,8 @@ training_set_size=0.8
 isCup=True
 name_monks="monks-3"
 train_number=10
+blind_test=True
 # create and execute neural network
-create_neural_network(retrain, test, training_set_size, isCup, name_monks)
+create_neural_network(retrain, test, training_set_size, isCup, name_monks,blind_test)
 #mean_execute(retrain, test, training_set_size, isCup, name_monks,train_number)
+
