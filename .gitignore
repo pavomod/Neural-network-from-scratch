@@ -8,5 +8,6 @@ env/
 .vscode/
 
 *.csv
+*.json
 
 note.txt

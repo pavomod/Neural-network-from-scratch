@@ -6,6 +6,7 @@ from neural_network import NeuralNetwork
 from classes import Preprocessing
 from dataset import simple_splitter, k_fold_splitter
 
+
 PATH_CONFIG = "neural_network\\configuration\\grid_search_config.json"
 PATH_TRAIN = "neural_network\\dataset\\data_train_val\\training_set.csv"
 PATH_VALIDATION = "neural_network\\dataset\data_train_val\\validation_set.csv"
@@ -22,40 +23,41 @@ class NeuralNetworkGridSearch:
     def __init__(self, settings):
         self.settings = settings
 
+        # Retrieve k-folds setting from configuration
         self.k_folds = settings['validation'][0]['k_folds']
+        # Variables to store the best model and its parameters
         self.best_model = None
         self.best_accuracy = 0
         self.best_params = None
+        # List to keep track of the top five models
         self.top_five = []
         
+        # Set the best score initial value based on the dataset type
         if IS_CUP:
             self.best_score = +np.inf
         else:
             self.best_score = -np.inf
 
     def generate_tr_vl_sets(self):
-        if settings['validation'][0]['enable_k_fold']:
+        if self.settings['validation'][0]['enable_k_fold']:
+            # Generate K-folds if enabled in settings
             k_fold_splitter(k_folds=self.k_folds, isCup=IS_CUP, name_monks=NAME_MONK)
-
         else:
+            # Otherwise, do a simple split
             simple_splitter(DIM_TRAINING_SET, IS_CUP, NAME_MONK)
-
-
 
     def generate_parameter_combinations(self):
         keys, values = zip(*self.settings.items())
         combinations = [dict(zip(keys, v)) for v in itertools.product(*values)]
         return combinations
     
-    def load_simple_data(self,_):
-
-        # Qui dovrai dividere il dataset in input e target, ad esempio:
+    def load_simple_data(self, _):
         if IS_CUP:
             input_training, target_training = read_dataset_cup(PATH_TRAIN)
             input_validation, target_validation = read_dataset_cup(PATH_VALIDATION)
         else:
-            input_training, target_training = read_dataset(PATH_TRAIN,"one_hot_encode")
-            input_validation, target_validation = read_dataset(PATH_VALIDATION,"one_hot_encode")
+            input_training, target_training = read_dataset(PATH_TRAIN, "one_hot_encode")
+            input_validation, target_validation = read_dataset(PATH_VALIDATION, "one_hot_encode")
     
         return input_training, target_training, input_validation, target_validation
 
@@ -67,13 +69,13 @@ class NeuralNetworkGridSearch:
             input_training, target_training = read_dataset_cup(train_set)
             input_validation, target_validation = read_dataset_cup(val_set)
         else:
-            input_training, target_training = read_dataset(train_set,"one_hot_encode")
-            input_validation, target_validation = read_dataset(val_set,"one_hot_encode")
+            input_training, target_training = read_dataset(train_set, "one_hot_encode")
+            input_validation, target_validation = read_dataset(val_set, "one_hot_encode")
     
         return input_training, target_training, input_validation, target_validation
 
     def create_network_settings(self, combination):
-
+        # create json configuration for neural network
         layers = []
         for _ in range(combination['num_hidden_layers']):
             layers.append({
@@ -127,67 +129,68 @@ class NeuralNetworkGridSearch:
 
         return default_config
 
-
     def search(self):
-        #geneariamo i set di training e validation
+        # Generate training and validation sets
         self.generate_tr_vl_sets()
-        
-        #iteriamo su tutte le combinazioni di parametri generati
-        for index,setting in enumerate(self.generate_parameter_combinations()):
+
+        # Iterate over all generated parameter combinations
+        for index, setting in enumerate(self.generate_parameter_combinations()):
             total_accuracy = 0
-            #se è abilitato il k-fold, allora carichiamo i dati in modo diverso
+
+            # Decide the data loading function based on k-fold validation setting
             if settings['validation'][0]['enable_k_fold']:
-                load_fun=self.load_k_fold_data
-                iteration=self.k_folds
+                load_fun = self.load_k_fold_data
+                iteration = self.k_folds
             else:
-                load_fun=self.load_simple_data
-                iteration=1
-                
-            #creiamo i parametri da passare alla rete neurale
+                load_fun = self.load_simple_data
+                iteration = 1
+
+            # Create parameters for the neural network
             params = self.create_network_settings(setting)
-            # creiamo la rete neurale
+            # Create the neural network
             model = NeuralNetwork(params)
             accuracies = []
 
-            # addestriamo la rete neurale, iterando su tutti i fold (se abilitato)
-            for fold in range(0, iteration):
-                # carichiamo i dati di training e validation
-                input_training, target_training, input_validation, target_validation = load_fun(fold+1)
-                # addestriamo la rete neurale
+            # Train the neural network, iterating over all folds if k-fold is enabled
+            for fold in range(iteration):
+                # Load training and validation data
+                input_training, target_training, input_validation, target_validation = load_fun(fold + 1)
+                # Train the neural network
                 model.train(input_training, target_training, input_validation, target_validation)
-                # calcoliamo le performance del modello
+                # Calculate the model's performance
                 loss, accuracy = model.performance(model.predict(input_validation), target_validation)
                 total_accuracy += accuracy
                 accuracies.append(accuracy)
 
-            # calcoliamo l'accuracy media del modello su tutti i training eseguiti
-            avg_accuracy = total_accuracy / iteration    
-            # calcoliamo la varianza 
+            # Calculate the model's average accuracy
+            avg_accuracy = total_accuracy / iteration
+            # Calculate the variance
             variance = sum((x - avg_accuracy) ** 2 for x in accuracies) / len(accuracies)
-            #selezioniamo il modello migliore
-            
+            # Calculate a score considering both accuracy and variance
             score = avg_accuracy - (variance ** 0.5)
-            
+
+            # Determine if this model is the best one based on the score
             if IS_CUP:
                 check = score < self.best_score
             else:
                 check = score > self.best_score
-                
+
             if check:
+                # Update the best model, its accuracy, parameters, and score
                 self.best_accuracy = avg_accuracy
                 self.best_model = model
                 self.best_params = model.get_params()
                 self.best_score = score
                 self.update_top_five_models(model, score, avg_accuracy, params)
 
+            # Print progress after every 5 iterations
             if index % 5 == 0:
-                    print(f"Iterazioni effettuate: {index}/{len(self.generate_parameter_combinations())}")
-        
-        # save top_five model in a file
+                print(f"Iterations completed: {index}/{len(self.generate_parameter_combinations())}")
+
+        # Save the top five models to a file
         with open("neural_network\\configuration\\top_five.json", 'w') as file:
             json.dump(self.top_five, file, indent=4)
-            
-        
+
         return self.best_model, self.best_accuracy, self.best_params
 
     def update_top_five_models(self, model, score, accuracy, params):
@@ -196,15 +199,13 @@ class NeuralNetworkGridSearch:
             'accuracy': accuracy,
             'params': params
         }
-        
+
+        # Add the model's information to the top five list
         self.top_five.append(model_info)
-        # Ordina per score la lista
-        if IS_CUP:
-            reverse=True
-        else:
-            reverse=False
-        self.top_five.sort(key=lambda x: x['score'],reverse=reverse)
-        # Mantiene solo i top 5 modelli
+        # Sort the list by score
+        reverse = True if IS_CUP else False
+        self.top_five.sort(key=lambda x: x['score'], reverse=reverse)
+        # Keep only the top five models
         self.top_five = self.top_five[:5]
         
 
@@ -214,70 +215,61 @@ def read_grid_search_config():
         config = json.load(file)
     return config
 
-
-def read_dataset(path,encoder_name):
+def read_dataset(path, encoder_name):
     df = pd.read_csv(path, sep=" ", header=None)
     df.drop(columns=[df.columns[-1]], inplace=True)
     
-    x = df.iloc[:, 2:8].values # tutte le colonne tranne la prima
-    
-    y = df.iloc[:, 1].values   # la prima colonna
-    y=y.reshape(-1,1)
-    encoder=Preprocessing(encoder_name)
-    x=encoder.encoder(x)
+    x = df.iloc[:, 2:8].values # All columns except the first
+    y = df.iloc[:, 1].values   # The first column
+    y = y.reshape(-1, 1)
+
+    encoder = Preprocessing(encoder_name)
+    x = encoder.encoder(x)
     
     return x, y
 
-def read_dataset_cup(path,encoder_name='standardization'):
+def read_dataset_cup(path, encoder_name='standardization'):
     df = pd.read_csv(path, sep=",", header=None)
-    #df.drop(columns=[df.columns[-1]], inplace=True)
     
-    x = df.iloc[:, 1:11].values # le prime 10 colonne tranne la prima
-    
-    y = df.iloc[:, 11:].values # gli ultimi 3 valori
-    #y=y.reshape(-1,1)
-    encoder=Preprocessing(encoder_name)
-    x=encoder.encoder(x)
+    x = df.iloc[:, 1:11].values # First 10 columns except the first
+    y = df.iloc[:, 11:].values # The last 3 values
+
+    encoder = Preprocessing(encoder_name)
+    x = encoder.encoder(x)
     
     return x, y
 
 
+
+
+# Read grid search configuration
 settings = read_grid_search_config()
 
-
-#MODEL SELECTION
+# Model selection using grid search
 grid_search = NeuralNetworkGridSearch(settings)
 model, accuracy, params = grid_search.search()
 
-#write params on file
+# Write the best parameters to a file
 with open("neural_network\\configuration\\best_params.json", 'w') as file:
     json.dump(params, file, indent=4)
 
-#ACCURACY VALIDATION MODELLO FINALE
-print("="*10)
-print("accuracy -> "+str(accuracy))
+# Output accuracy of the final model
+print("=" * 10)
+print("accuracy -> " + str(accuracy))
 
-
-#LEARNING CURVE
-
-
-
-# TEST
-
+# Learning curve plotting and model testing
 if IS_CUP:
-    x_train,y_train = read_dataset_cup(PATH_RETRAIN)
-    x_val,y_val = read_dataset_cup(PATH_VALIDATION)
-    #model.train(x_train,y_train,x_val,y_val)
-    x_test,y_test = read_dataset_cup(PATH_HOLD_OUT)
-    model.test(x_test,y_test)
-    model.plot_loss_curve(0,0)
+    x_train, y_train = read_dataset_cup(PATH_RETRAIN)
+    x_val, y_val = read_dataset_cup(PATH_VALIDATION)
+    x_test, y_test = read_dataset_cup(PATH_HOLD_OUT)
+    model.test(x_test, y_test)
+    model.plot_loss_curve(0, 0)
 else:
-    x_train,y_train = read_dataset(PATH_TRAIN,"none")
-    x_val,y_val = read_dataset(PATH_VALIDATION,"none")
-    model.train(x_train,y_train,x_val,y_val)
-    x_test,y_test = read_dataset(PATH_HOLD_OUT,"none")
-    model.test(x_test,y_test)
-    model.plot_loss_curve(0,0)
-
+    x_train, y_train = read_dataset(PATH_TRAIN, "none")
+    x_val, y_val = read_dataset(PATH_VALIDATION, "none")
+    model.train(x_train, y_train, x_val, y_val)
+    x_test, y_test = read_dataset(PATH_HOLD_OUT, "none")
+    model.test(x_test, y_test)
+    model.plot_loss_curve(0, 0)
 
 
