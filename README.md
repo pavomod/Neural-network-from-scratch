@@ -1,9 +1,13 @@
-# Neural Network
+# Neural Network 🧠
+### Progetto 📈
+Questo progetto mira a sviluppare una Rete Neurale Artificiale da zero, utilizzando Python senza fare affidamento su librerie pre-esistenti. Il processo di validazione comprende la selezione di uno spazio di ricerca per gli iperparametri e l'esecuzione di una ricerca a griglia. Successivamente, si effettuano raffinamenti per valutare potenziali miglioramenti. Ogni modello viene convalidato utilizzando una validazione incrociata a 5 fold.
 
-The project involves developing an Artificial Neural Network from scratch using Python, without relying on pre-existing libraries. The validation process includes selecting a hyperparameter search space and conducting a grid search. Subsequent refinements are made to assess potential improvements. Each model is validated using 5-fold cross-validation. The final model is a neural network with 4 hidden layers, configured as follows:
-- (20, tanH, He)
-- (30, tanH, He)
-- (20, tanH, He)
-- (30, tanH, He)
-- (25, relu, He)
-- (3, linear, uniform).
+### Rete finale 🚀
+La rete neurale finale è configurata con 4 strati nascosti come segue:
+
+Primo strato: 20 nodi, funzione di attivazione tanH, inizializzazione He
+Secondo strato: 30 nodi, funzione di attivazione tanH, inizializzazione He
+Terzo strato: 20 nodi, funzione di attivazione tanH, inizializzazione He
+Quarto strato: 30 nodi, funzione di attivazione tanH, inizializzazione He
+Quinto strato: 25 nodi, funzione di attivazione ReLU, inizializzazione He
+Strato di output: 3 nodi, funzione di attivazione lineare, inizializzazione uniforme
